@@ -63,12 +63,16 @@ public:
         // Create node attributes
         node.AddNodeAttribute(0.0);
 
-        auto attributes = node.rGetNodeAttributes();
+        std::vector<double>& attributes = node.rGetNodeAttributes();
 
         attributes.resize(NA_VEC_LENGTH);
         attributes[NA_ANGLE] = 1.23;
         attributes[NA_LENGTH] = 2.34;
         attributes[NA_RADIUS] = 3.45;
+
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_ANGLE], 1.23, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_LENGTH], 2.34, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_RADIUS], 3.45, 1e-6);
     }
 };
 
