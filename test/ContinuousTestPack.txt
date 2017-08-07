@@ -1,2 +1,5 @@
 TestHelloDundeeTypeSixSecretion.hpp
 TestTypeSixMachineProperty.hpp
+
+TestCapsuleNodeAttributes.hpp
+TestCapsuleForce.hpp
