@@ -1,6 +1,9 @@
 
 #include "TypeSixMachineModifier.hpp"
+
+#include "RandomNumberGenerator.hpp"
 #include "TypeSixMachineProperty.hpp"
+
 
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
