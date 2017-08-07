@@ -41,7 +41,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
          ++cell_iter)
     {
         // Get this cell's type six machine property data
-        CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().GetProperties<TypeSixMachineProperty>();
+        CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::set<std::pair<unsigned, double> >& data = p_property->rGetMachineData();
 
