@@ -53,7 +53,7 @@ CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CapsuleForce()
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
+double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
         Node<SPACE_DIM>& rNodeA,
         Node<SPACE_DIM>& rNodeB)
 {
@@ -89,7 +89,7 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
     double d = boost::geometry::comparable_distance(capsule_axis_a, capsule_axis_b);
 
 
-    return sqrt(d) - radius_a - radius_b;
+    return radius_a + radius_b - sqrt(d);
 }
 
 

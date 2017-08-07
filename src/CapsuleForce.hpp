@@ -65,7 +65,14 @@ private:
         archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
     }
 
-    double CalculateDistanceBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB);
+    /**
+     * Calculate the overlap between two capsules. This is the sum of the radii minus the shortest distance between
+     * the capsules.
+     * @param rNodeA the node at the centre of mass of the first capsule
+     * @param rNodeB the node at the centre of mass of the second capsule
+     * @return the overlap
+     */
+    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB);
 
 
 public:

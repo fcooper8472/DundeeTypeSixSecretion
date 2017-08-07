@@ -82,7 +82,7 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.25;
 
-            TS_ASSERT_DELTA(force.CalculateDistanceBetweenCapsules(node_a, node_b), 1.25, 1e-6);
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b), -1.25, 1e-6);
         }
 
         // One horizontal, one vertical, distance 2 from each other
@@ -106,7 +106,7 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.05;
 
-            TS_ASSERT_DELTA(force.CalculateDistanceBetweenCapsules(node_a, node_b), 1.2, 1e-6);
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b), -1.2, 1e-6);
         }
 
         // Intersecting cross shape, distance 0 from each other
@@ -130,7 +130,7 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.5;
 
-            TS_ASSERT_DELTA(force.CalculateDistanceBetweenCapsules(node_a, node_b), -1.0, 1e-6);
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b), 1.0, 1e-6);
         }
 
         // Intersecting cross shape, distance 0 from each other
@@ -154,7 +154,7 @@ public:
             attributes_b[NA_LENGTH] = 4.0;
             attributes_b[NA_RADIUS] = 0.13;
 
-            TS_ASSERT_DELTA(force.CalculateDistanceBetweenCapsules(node_a, node_b), 1.55, 1e-6);
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b), -1.55, 1e-6);
         }
     }
 };
