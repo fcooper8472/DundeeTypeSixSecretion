@@ -35,7 +35,6 @@ public:
         CellPtr p_cell(new Cell(p_state, p_model));
         p_cell->SetCellProliferativeType(p_type);
         p_cell->InitialiseCellCycleModel();
-
         p_cell->AddCellProperty(p_property);
         
         TS_ASSERT_EQUALS(p_cell->rGetCellPropertyCollection().HasProperty(p_property), true);
@@ -45,6 +44,7 @@ public:
         boost::shared_ptr<TypeSixMachineProperty> p_property_from_cell = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), true);
 
+        // Test that we can add some data to the data structure
         std::set<std::pair<unsigned, double> >& data = p_property_from_cell->rGetMachineData();
         std::pair<unsigned, double> machine(4, 0.5);
         
@@ -54,9 +54,20 @@ public:
         collection = p_cell->rGetCellPropertyCollection().GetProperties<TypeSixMachineProperty>();
         p_property_from_cell = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), false);
+
+        // Test that we can recover the data from the data structure
+        std::set<std::pair<unsigned, double> >& data_from_cell = p_property_from_cell->rGetMachineData();
+        TS_ASSERT_EQUALS(data_from_cell.size(), 1u);
+
+        std::pair<unsigned, double> data_pair = *(data_from_cell.begin());
+        unsigned data_1 = data_pair.first;
+        TS_ASSERT_EQUALS(data_1, 4u);
+        double data_2 = data_pair.second;
+        TS_ASSERT_DELTA(data_2, 0.5, 1e-6);
     }
 
-    void TestMachinery() throw(Exception)
+    ///\todo test that property can be used in a simulation with different values for each cell
+    void TestSimulationWithProperty() throw(Exception)
     {
         EXIT_IF_PARALLEL;
 
