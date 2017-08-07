@@ -45,21 +45,19 @@ public:
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), true);
 
         // Test that we can add some data to the data structure
-        std::set<std::pair<unsigned, double> >& data = p_property_from_cell->rGetMachineData();
-        std::pair<unsigned, double> machine(4, 0.5);
-        
-        data.insert(machine);
-        TS_ASSERT_EQUALS(data.empty(), false);
+        std::vector<std::pair<unsigned, double> >& r_data = p_property_from_cell->rGetMachineData();
+        r_data.emplace_back(std::pair<unsigned, double>(4, 0.5));
+        TS_ASSERT_EQUALS(r_data.empty(), false);
 
         collection = p_cell->rGetCellPropertyCollection().GetProperties<TypeSixMachineProperty>();
         p_property_from_cell = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), false);
 
         // Test that we can recover the data from the data structure
-        std::set<std::pair<unsigned, double> >& data_from_cell = p_property_from_cell->rGetMachineData();
-        TS_ASSERT_EQUALS(data_from_cell.size(), 1u);
+        std::vector<std::pair<unsigned, double> >& r_data_from_cell = p_property_from_cell->rGetMachineData();
+        TS_ASSERT_EQUALS(r_data_from_cell.size(), 1u);
 
-        std::pair<unsigned, double> data_pair = *(data_from_cell.begin());
+        std::pair<unsigned, double> data_pair = r_data_from_cell[0];
         unsigned data_1 = data_pair.first;
         TS_ASSERT_EQUALS(data_1, 4u);
         double data_2 = data_pair.second;

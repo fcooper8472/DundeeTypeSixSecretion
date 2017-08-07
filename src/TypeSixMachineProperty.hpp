@@ -14,7 +14,7 @@ class TypeSixMachineProperty : public AbstractCellProperty
 {
 private:
 
-    std::set<std::pair<unsigned, double> > mMachineData;
+    std::vector<std::pair<unsigned, double> > mMachineData;
 
 public:
 
@@ -31,7 +31,7 @@ public:
     /**
      * @return #mMachineData
      */
-    std::set<std::pair<unsigned, double> >& rGetMachineData();
+    std::vector<std::pair<unsigned, double> >& rGetMachineData();
 };
 
 #include "SerializationExportWrapper.hpp"

@@ -46,7 +46,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         // Get this cell's type six machine property data
         CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-        std::set<std::pair<unsigned, double> >& data = p_property->rGetMachineData();
+        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
         ///\todo change parameters to be member variables
         double k_1 = 1.0;
@@ -61,11 +61,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 	    double dt = SimulationTime::Instance()->GetTimeStep();
         assert((k_1 + k_2 + k_3 + k_4 + k_5 + k_6 + k_7 + k_8)*dt <= 1.0);
 
-        for (std::set<std::pair<unsigned, double> >::iterator it = data.begin();
-             it != data.end();
-             )
+		// Create a new vector to store all pairs less any we might throw away
+		std::vector<std::pair<unsigned, double> > new_data;
+		new_data.reserve(r_data.size() + 1);
+
+        for (auto& r_pair : r_data)
         {
-	        unsigned old_state = (*it).first;
+	        unsigned old_state = r_pair.first;
 	        unsigned new_state = UNSIGNED_UNSET;
 		    double r = RandomNumberGenerator::Instance()->ranf();
 		
@@ -110,15 +112,15 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		        default:
 		            NEVER_REACHED;
 		    }
-		    data.first = new_state;
-		    
-		    if (new_state == 0)
+
+		    if (new_state != UNSIGNED_UNSET && new_state > 0)
+			{
+				r_pair.first = new_state;
+			}
+
+		    if (new_state != 0)
 		    {
-		        data.erase(it);
-		    }
-		    else
-		    {
-		        ++it;
+		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
 		    }
 		}
 		
@@ -128,9 +130,11 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         if (r < k_1*dt)
         {
             double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
-        	std::pair<unsigned, double> machine(1, theta);
-            data.insert(machine);
+
+        	new_data.emplace_back(std::pair<unsigned, double>(1, theta));
         }
+
+		r_data = new_data;
     }
 }
 
