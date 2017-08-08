@@ -1,9 +1,8 @@
 
 #include "TypeSixMachineModifier.hpp"
-
 #include "RandomNumberGenerator.hpp"
 #include "TypeSixMachineProperty.hpp"
-
+#include "Exception.hpp"
 
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
@@ -42,9 +41,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
     for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
          cell_iter != rCellPopulation.End();
          ++cell_iter)
-    {
+    { 
         // Get this cell's type six machine property data
         CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+        if (collection.GetSize() != 1)
+        {
+            EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
+        }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
@@ -109,8 +112,6 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		                new_state = 8;
 		            }
 		            break;
-		        default:
-		            NEVER_REACHED;
 		    }
 
 		    if (new_state != UNSIGNED_UNSET && new_state > 0)

@@ -1,4 +1,6 @@
-TestHelloDundeeTypeSixSecretion.hpp
-TestTypeSixMachineProperty.hpp
-TestCapsuleNodeAttributes.hpp
 TestCapsuleForce.hpp
+TestCapsuleNodeAttributes.hpp
+TestHelloDundeeTypeSixSecretion.hpp
+TestTypeSixMachineCellKiller.hpp
+TestTypeSixMachineModifier.hpp
+TestTypeSixMachineProperty.hpp
