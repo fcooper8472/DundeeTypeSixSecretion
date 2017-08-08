@@ -48,7 +48,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscTools.hpp"
 
 #include "CapsuleForce.hpp"
-
+#include "Debug.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
 class TestCapsuleForce : public CxxTest::TestSuite
@@ -163,6 +163,175 @@ public:
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
 
             TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+        }
+    }
+
+    void TestCalculateForceDirectionAndContactPoints() throw(Exception)
+    {
+        CapsuleForce<2, 2> force;
+
+        // Two horizontal rods a distance 2 from each other
+        {
+            // index, {x, y}
+            Node<2> node_a(0u, std::vector<double>{10.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_LENGTH] = 2.0;
+
+            Node<2> node_b(0u, std::vector<double>{0.0, 3.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_LENGTH] = 2.0;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+
+            double contact_dist_a;
+            double contact_dist_b;
+            c_vector<double, 2> vec_a_to_b;
+
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], -8.0 / sqrt(73.0), 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], 3.0 / sqrt(73.0), 1e-6);
+
+            // Swap a->b for coverage
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 8.0 / sqrt(73.0), 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], -3.0 / sqrt(73.0), 1e-6);
+        }
+
+        // Two horizontal rods a distance 2 from each other
+        {
+            // index, {x, y}
+            Node<2> node_a(0u, std::vector<double>{10.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_LENGTH] = 2.0;
+
+            Node<2> node_b(0u, std::vector<double>{0.0, 3.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_LENGTH] = 18.0;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+
+            double contact_dist_a;
+            double contact_dist_b;
+            c_vector<double, 2> vec_a_to_b;
+
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], 1.0, 1e-6);
+
+            // Swap a->b
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], -1.0, 1e-6);
+        }
+
+        // 3-4-5 triangle-based orientation
+        {
+            // index, {x, y}
+            Node<2> node_a(0u, std::vector<double>{4.0, 3.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_ANGLE] = atan(0.75);
+            attributes_a[NA_LENGTH] = 4.0;
+
+            Node<2> node_b(0u, std::vector<double>{4.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_LENGTH] = 4.0;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+
+            double contact_dist_a;
+            double contact_dist_b;
+            c_vector<double, 2> vec_a_to_b;
+
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], -1.0, 1e-6);
+
+            // Swap a->b for coverage
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+
+            TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], 1.0, 1e-6);
+        }
+
+        // 3-4-5 triangle-based orientation, with the horizontal capsule rotated 180 from the test above
+        {
+            // index, {x, y}
+            Node<2> node_a(0u, std::vector<double>{4.0, 3.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_ANGLE] = atan(0.75) + M_PI;
+            attributes_a[NA_LENGTH] = 4.0;
+
+            Node<2> node_b(0u, std::vector<double>{4.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_LENGTH] = 4.0;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+
+            double contact_dist_a;
+            double contact_dist_b;
+            c_vector<double, 2> vec_a_to_b;
+
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+
+            TS_ASSERT_DELTA(contact_dist_a, 0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], -1.0, 1e-6);
+
+            // Swap a->b for coverage
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+
+            TS_ASSERT_DELTA(contact_dist_a, 0.5 * attributes_a[NA_LENGTH], 1e-6);
+            TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(vec_a_to_b[1], 1.0, 1e-6);
         }
     }
 };

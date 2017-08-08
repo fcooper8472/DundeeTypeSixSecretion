@@ -44,10 +44,27 @@ private:
      * the capsules.
      * @param rNodeA the node at the centre of mass of the first capsule
      * @param rNodeB the node at the centre of mass of the second capsule
-     * @param distance the shortest distance between the two capsules
+     * @param shortestDistance the shortest distance between the two capsules
      * @return the overlap
      */
-    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double distance);
+    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double shortestDistance);
+
+    /**
+     * Calculate the direction of the force between two overlapping capsules, and the distance along the rod from each
+     * capsule's centre of mass to the point at which the force will act.
+     * @param rNodeA the node at the centre of mass of the first capsule
+     * @param rNodeB the node at the centre of mass of the second capsule
+     * @param shortestDistance the shortest distance between the two capsules
+     * @param rVecAToB filled in as a unit vector from the contact point on capsule A to that on capsule B
+     * @param rContactDistA filled in as the distance from the centre of mass of capsule A to contact point
+     * @param rContactDistB filled in as the distance from the centre of mass of capsule B to contact point
+     */
+    void CalculateForceDirectionAndContactPoints(Node<SPACE_DIM>& rNodeA,
+                                                 Node<SPACE_DIM>& rNodeB,
+                                                 const double shortestDistance,
+                                                 c_vector<double, SPACE_DIM>& rVecAToB,
+                                                 double& rContactDistA,
+                                                 double& rContactDistB);
 
 public:
 
