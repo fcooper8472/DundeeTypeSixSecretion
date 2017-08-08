@@ -36,13 +36,6 @@ public:
     TypeSixMachineCellKiller(AbstractCellPopulation<DIM>* pCellPopulation);
 
     /**
-     * Overridden method to test a given cell for apoptosis.
-     *
-     * @param pCell the cell to test for apoptosis
-     */
-    void CheckAndLabelSingleCellForApoptosis(CellPtr pCell);
-
-    /**
      * Loop over cells and start apoptosis randomly, based on the user-set
      * probability.
      */
