@@ -14,7 +14,7 @@ CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CapsuleForce()
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
+double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
         Node<SPACE_DIM>& rNodeA,
         Node<SPACE_DIM>& rNodeB)
 {
@@ -26,11 +26,9 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
 
     const double angle_a = rNodeA.rGetNodeAttributes()[NA_ANGLE];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
-    const double radius_a = rNodeA.rGetNodeAttributes()[NA_RADIUS];
 
     const double angle_b = rNodeB.rGetNodeAttributes()[NA_ANGLE];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
-    const double radius_b = rNodeB.rGetNodeAttributes()[NA_RADIUS];
 
     geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_a),
                                location_a[1] + 0.5 * length_a * sin(angle_a));
@@ -47,9 +45,19 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
     geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
     geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
 
-    double d = boost::geometry::comparable_distance(capsule_axis_a, capsule_axis_b);
+    return boost::geometry::distance(capsule_axis_a, capsule_axis_b);
+}
 
-    return radius_a + radius_b - sqrt(d);
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
+        Node<SPACE_DIM>& rNodeA,
+        Node<SPACE_DIM>& rNodeB,
+        const double distance)
+{
+    const double radius_a = rNodeA.rGetNodeAttributes()[NA_RADIUS];
+    const double radius_b = rNodeB.rGetNodeAttributes()[NA_RADIUS];
+
+    return radius_a + radius_b - distance;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
