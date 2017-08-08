@@ -48,7 +48,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscTools.hpp"
 
 #include "CapsuleForce.hpp"
-#include "Debug.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
 class TestCapsuleForce : public CxxTest::TestSuite

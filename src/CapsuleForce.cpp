@@ -113,7 +113,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         rContactDistA = 0.5 * length_a;
         angle_for_calculation = angle_b;
         point_in_capsule_a = true;
-        HOW_MANY_TIMES_HERE("1");
     }
     else if(fabs(boost::geometry::distance(capsule_a_end_2, capsule_axis_b) - shortestDistance) < 1e-12)
     {
@@ -123,7 +122,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         rContactDistA = -0.5 * length_a;
         angle_for_calculation = angle_b;
         point_in_capsule_a = true;
-        HOW_MANY_TIMES_HERE("2");
     }
     else if(fabs(boost::geometry::distance(capsule_b_end_1, capsule_axis_a) - shortestDistance) < 1e-12)
     {
@@ -133,7 +131,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         rContactDistB = 0.5 * length_b;
         angle_for_calculation = angle_a;
         point_in_capsule_a = false;
-        HOW_MANY_TIMES_HERE("3");
     }
     else if(fabs(boost::geometry::distance(capsule_b_end_2, capsule_axis_a) - shortestDistance) < 1e-12)
     {
@@ -143,7 +140,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         rContactDistB = -0.5 * length_b;
         angle_for_calculation = angle_a;
         point_in_capsule_a = false;
-        HOW_MANY_TIMES_HERE("4");
     }
     else
     {
@@ -176,7 +172,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         if (fabs(other_length) > 0.5 * length_b)
         {
             other_length = copysign(0.5 * length_b, other_length);
-            HOW_MANY_TIMES_HERE("6");
         }
 
         rContactDistB = other_length;
@@ -191,7 +186,6 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
     if (point_in_capsule_a)
     {
         rVecAToB *= -1.0;
-        HOW_MANY_TIMES_HERE("7");
     }
 
     rVecAToB /= norm_2(rVecAToB);
