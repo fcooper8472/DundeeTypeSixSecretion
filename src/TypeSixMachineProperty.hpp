@@ -10,10 +10,14 @@
 #include "PetscTools.hpp"
 #include <set>
 
+/**
+ * \todo Document class
+ */
 class TypeSixMachineProperty : public AbstractCellProperty
 {
 private:
 
+    /** \todo Document member */
     std::vector<std::pair<unsigned, double> > mMachineData;
 
 public:

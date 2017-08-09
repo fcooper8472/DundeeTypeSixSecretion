@@ -7,10 +7,17 @@
 
 #include "AbstractCellBasedSimulationModifier.hpp"
 
+/**
+ * \todo Document class
+ */
 template<unsigned DIM>
 class TypeSixMachineModifier : public AbstractCellBasedSimulationModifier<DIM,DIM>
 {
 private:
+
+    ///\todo Implement archiving
+
+    /** \todo Document member */
     std::string mOutputDirectory;
 
     /** Meta results file for VTK. */
@@ -59,6 +66,7 @@ public:
      */
     void SetupSolve(AbstractCellPopulation<DIM,DIM>& rCellPopulation, std::string outputDirectory);
 
+    /** \todo Document method */
     void WriteVtk(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
     
     /**

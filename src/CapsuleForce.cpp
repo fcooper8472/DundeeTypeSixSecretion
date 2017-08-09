@@ -1,6 +1,6 @@
 
 #include "CapsuleForce.hpp"
-#include "DundeeTypeSixSecretionEnumerations.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/segment.hpp>
 #include <boost/geometry/geometries/point.hpp>

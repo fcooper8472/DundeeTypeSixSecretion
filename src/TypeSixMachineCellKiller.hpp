@@ -7,6 +7,9 @@
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
 
+/**
+ * \todo Document class
+ */
 template<unsigned DIM>
 class TypeSixMachineCellKiller : public AbstractCellKiller<DIM>
 {

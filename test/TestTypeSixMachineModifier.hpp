@@ -23,7 +23,7 @@
 #include "GeneralisedLinearSpringForce.hpp"
 #include "OffLatticeSimulation.hpp"
 #include "TypeSixMachineModifier.hpp"
-#include "DundeeTypeSixSecretionEnumerations.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 
 // This test is always run sequentially (never in parallel)
 #include "FakePetscSetup.hpp"

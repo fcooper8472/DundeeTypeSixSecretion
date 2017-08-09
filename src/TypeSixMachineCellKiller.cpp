@@ -1,7 +1,11 @@
 
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/segment.hpp>
+#include <boost/geometry/geometries/point.hpp>
+
 #include "TypeSixMachineCellKiller.hpp"
 #include "TypeSixMachineProperty.hpp"
-#include "DundeeTypeSixSecretionEnumerations.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 #include "NodeBasedCellPopulation.hpp"
 
 template<unsigned DIM>
@@ -13,8 +17,12 @@ TypeSixMachineCellKiller<DIM>::TypeSixMachineCellKiller(AbstractCellPopulation<D
 template<unsigned DIM>
 void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 {
+    assert (DIM == 2);
     assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(this->mpCellPopulation)));
     NodeBasedCellPopulation<DIM>* p_population = static_cast<NodeBasedCellPopulation<DIM>*>(this->mpCellPopulation);
+
+    using geom_point = boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian>;
+    using geom_segment = boost::geometry::model::segment<geom_point>;
 
     // Iterate over cells
     for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->mpCellPopulation->Begin();
@@ -81,21 +89,38 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                     y_in_cell_frame = x_in_cell_frame*tan(theta); 
                 }
 
-                // Compute location of this machine
-                double X = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
-                double Y = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
+	            // Compute and store the coordinates of this machine            
+	            c_vector<double, DIM> machine_coords;
+	            machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
+	            machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
                 
                 // Store the node indices corresponding to neighbouring cells
                 double neighbourhood_radius = 3.0*L;
                 std::set<unsigned> neighbours = p_population->GetNodesWithinNeighbourhoodRadius(node_index, neighbourhood_radius);
-                
+
                 // Iterate over neighbouring cells
                 for (std::set<unsigned>::iterator it = neighbours.begin();
                      it != neighbours.end();
                      ++it)
                 {
-                    ///\todo compute distance between (X,Y) and this neighbouring cell's line segment
-                    double distance_to_neighbour = 1000*fabs(X + Y);
+                    Node<DIM>* p_neighbour = p_population->GetNode(*it);
+                    
+                    // Compute distance between (X,Y) and this neighbouring cell's line segment
+                    auto neighbour_location = p_neighbour->rGetLocation();
+				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_ANGLE];
+				    const double neighbour_length = p_neighbour->rGetNodeAttributes()[NA_LENGTH];
+				
+				    geom_point machine_point(machine_coords[0], machine_coords[1]);
+								
+				    geom_point neighbour_end_1(neighbour_location[0] + 0.5 * neighbour_length * cos(neighbour_angle),
+				                               neighbour_location[1] + 0.5 * neighbour_length * sin(neighbour_angle));
+				
+				    geom_point neighbour_end_2(neighbour_location[0] - 0.5 * neighbour_length * cos(neighbour_angle),
+				                               neighbour_location[1] - 0.5 * neighbour_length * sin(neighbour_angle));
+				
+				    geom_segment neighbour_axis(neighbour_end_1, neighbour_end_2);
+				
+				    double distance_to_neighbour = boost::geometry::distance(machine_point, neighbour_axis);
                     
                     if (distance_to_neighbour > R)
                     {

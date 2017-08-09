@@ -4,7 +4,7 @@
 #include "TypeSixMachineProperty.hpp"
 #include "Exception.hpp"
 #include "VtkMeshWriter.hpp"
-#include "DundeeTypeSixSecretionEnumerations.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 #include "OutputFileHandler.hpp"
 #include "NodesOnlyMesh.hpp"
 
