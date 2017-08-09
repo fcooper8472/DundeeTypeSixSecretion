@@ -333,6 +333,29 @@ public:
             TS_ASSERT_DELTA(vec_a_to_b[1], 1.0, 1e-6);
         }
     }
+
+    void TestCalculateForceMagnitude() throw(Exception)
+    {
+        CapsuleForce<2, 2> force;
+
+        // Hand calculate a trivial case
+        {
+            double overlap = 1.0;
+            double radiusA = 4.0;
+            double radiusB = 4.0;
+
+            TS_ASSERT_DELTA(force.CalculateForceMagnitude(overlap, radiusA, radiusB), 800.0 / 3.0, 1e-6);
+        }
+
+        // Hand calculate a nontrivial case
+        {
+            double overlap = 1.23;
+            double radiusA = 2.34;
+            double radiusB = 3.45;
+
+            TS_ASSERT_DELTA(force.CalculateForceMagnitude(overlap, radiusA, radiusB), 303.731332875, 1e-6);
+        }
+    }
 };
 
 #endif /*_TESTCAPSULEFORCE_HPP_*/

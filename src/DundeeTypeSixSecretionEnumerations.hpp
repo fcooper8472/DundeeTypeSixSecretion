@@ -44,6 +44,7 @@ enum NodeAttributeVectorPositions : std::size_t
     NA_ANGLE,
     NA_LENGTH,
     NA_RADIUS,
+    NA_APPLIED_ANGLE,
     NA_VEC_LENGTH
 };
 

@@ -8,7 +8,8 @@
 #include <boost/serialization/base_object.hpp>
 
 /**
- * A force law between two capsules (cylinder with hemispherical caps)
+ * A force law between two capsules (cylinder with hemispherical caps), defined in Farrell et al:
+ * J R Soc Interface. 2017 Jun;14(131). pii: 20170073. doi: 10.1098/rsif.2017.0073
  */
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class CapsuleForce : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
@@ -17,8 +18,12 @@ class CapsuleForce : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 
 private:
 
+    /** The elastic modulus of both cells (Farrell et al) */
+    double mYoungModulus;
+
     /** Needed for serialization. */
     friend class boost::serialization::access;
+
     /**
      * Archive the object and its member variables.
      *
@@ -29,6 +34,7 @@ private:
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+        archive & mYoungModulus;
     }
 
     /**
@@ -65,6 +71,15 @@ private:
                                                  c_vector<double, SPACE_DIM>& rVecAToB,
                                                  double& rContactDistA,
                                                  double& rContactDistB);
+
+    /**
+     * Calculate the magnitude of the repulsion force given the overlap and capsule radii
+     * @param overlap the overlap between capsules
+     * @param radiusA the radius of capsule A
+     * @param radiusB the radius of capsule B
+     * @return the magnitude of the repulsion force
+     */
+    double CalculateForceMagnitude(const double overlap, const double radiusA, const double radiusB);
 
 public:
 
