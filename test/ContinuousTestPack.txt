@@ -1,5 +1,6 @@
 TestCapsuleForce.hpp
 TestCapsuleNodeAttributes.hpp
+TestNumericalMethodForCapsules.hpp
 TestTypeSixMachineCellKiller.hpp
 TestTypeSixMachineModifier.hpp
 TestTypeSixMachineProperty.hpp
