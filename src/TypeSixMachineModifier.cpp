@@ -43,8 +43,7 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
     time << num_timesteps;
 
     // Create mesh writer for VTK output
-    ///\todo remove hardcoding of "machine_results_from_time_0" below
-    VtkMeshWriter<DIM, DIM> mesh_writer(mOutputDirectory+"/machine_results_from_time_0",
+    VtkMeshWriter<DIM, DIM> mesh_writer(mOutputDirectory,
                                         "machine_results_"+time.str(),
                                         false);
 
@@ -138,7 +137,7 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
 
     *mpVtkMetaFile << "        <DataSet timestep=\"";
     *mpVtkMetaFile << num_timesteps;
-    *mpVtkMetaFile << "\" group=\"\" part=\"0\" file=\"results_";
+    *mpVtkMetaFile << "\" group=\"\" part=\"0\" file=\"machine_results_";
     *mpVtkMetaFile << num_timesteps;
     *mpVtkMetaFile << ".vtu\"/>\n";
 
@@ -164,7 +163,6 @@ void TypeSixMachineModifier<DIM>::UpdateAtEndOfOutputTimeStep(AbstractCellPopula
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::SetupSolve(AbstractCellPopulation<DIM,DIM>& rCellPopulation, std::string outputDirectory)
 {
-///\todo fix writing of .pvd file
 #ifdef CHASTE_VTK
     // Create output files for the visualizer
     double time_now = SimulationTime::Instance()->GetTime();
@@ -175,8 +173,9 @@ void TypeSixMachineModifier<DIM>::SetupSolve(AbstractCellPopulation<DIM,DIM>& rC
     {
         EXCEPTION("SetOutputDirectory() must be called on TypeSixMachineModifier");
     }
+    mOutputDirectory += "/machine_results_from_time_" + time_string.str();
 
-    OutputFileHandler output_file_handler(mOutputDirectory +"/machine_results_from_time_" + time_string.str(), false);
+    OutputFileHandler output_file_handler(mOutputDirectory, false);
     mpVtkMetaFile = output_file_handler.OpenOutputFile("machine_results.pvd");
     *mpVtkMetaFile << "<?xml version=\"1.0\"?>\n";
     *mpVtkMetaFile << "<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">\n";
