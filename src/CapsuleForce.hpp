@@ -2,7 +2,7 @@
 #ifndef CAPSULEFORCE_HPP_
 #define CAPSULEFORCE_HPP_
 
-#include "AbstractTwoBodyInteractionForce.hpp"
+#include "AbstractForce.hpp"
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
@@ -11,7 +11,7 @@
  * A force law between two capsules (cylinder with hemispherical caps)
  */
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
-class CapsuleForce : public AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM>
+class CapsuleForce : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 {
     friend class TestCapsuleForce;
 
@@ -28,7 +28,7 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+        archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
     }
 
     /**
@@ -79,20 +79,11 @@ public:
     virtual ~CapsuleForce() = default;
 
     /**
-     * Overridden CalculateForceBetweenNodes() method.
+     * Overridden AddForceContribution() method.
      *
-     * Calculates the force between two nodes.
-     *
-     * Note that this assumes they are connected and is called by AddForceContribution()
-     *
-     * @param nodeAGlobalIndex index of one neighbouring node
-     * @param nodeBGlobalIndex index of the other neighbouring node
-     * @param rCellPopulation the cell population
-     * @return The force exerted on Node A by Node B.
+     * @param rCellPopulation reference to the cell population
      */
-    c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
-                                                     unsigned nodeBGlobalIndex,
-                                                     AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+    void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
     /**
      * Overridden OutputForceParameters() method.

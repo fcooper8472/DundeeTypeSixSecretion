@@ -7,7 +7,7 @@
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CapsuleForce()
-    : AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>()
+    : AbstractForce<ELEMENT_DIM,SPACE_DIM>()
 {
     assert(ELEMENT_DIM == 2u);
     assert(SPACE_DIM == 2u);
@@ -191,20 +191,17 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
     rVecAToB /= norm_2(rVecAToB);
 }
 
-template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-c_vector<double, SPACE_DIM> CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
-                                                                                             unsigned nodeBGlobalIndex,
-                                                                                             AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>& rCellPopulation)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
 {
-    c_vector<double, SPACE_DIM> answer;
-    return answer;
+    
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
     // Call method on direct parent class
-    AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(rParamsFile);
+    AbstractForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(rParamsFile);
 }
 
 // Explicit instantiation
