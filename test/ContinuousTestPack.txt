@@ -1,6 +1,5 @@
 TestCapsuleForce.hpp
 TestCapsuleNodeAttributes.hpp
-TestHelloDundeeTypeSixSecretion.hpp
 TestTypeSixMachineCellKiller.hpp
 TestTypeSixMachineModifier.hpp
 TestTypeSixMachineProperty.hpp

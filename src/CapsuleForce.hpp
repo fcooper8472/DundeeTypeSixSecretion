@@ -2,7 +2,7 @@
 #ifndef CAPSULEFORCE_HPP_
 #define CAPSULEFORCE_HPP_
 
-#include "AbstractTwoBodyInteractionForce.hpp"
+#include "AbstractForce.hpp"
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
@@ -11,7 +11,7 @@
  * A force law between two capsules (cylinder with hemispherical caps)
  */
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
-class CapsuleForce : public AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM>
+class CapsuleForce : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 {
     friend class TestCapsuleForce;
 
@@ -28,7 +28,7 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+        archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
     }
 
     /**
@@ -44,10 +44,27 @@ private:
      * the capsules.
      * @param rNodeA the node at the centre of mass of the first capsule
      * @param rNodeB the node at the centre of mass of the second capsule
-     * @param distance the shortest distance between the two capsules
+     * @param shortestDistance the shortest distance between the two capsules
      * @return the overlap
      */
-    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double distance);
+    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double shortestDistance);
+
+    /**
+     * Calculate the direction of the force between two overlapping capsules, and the distance along the rod from each
+     * capsule's centre of mass to the point at which the force will act.
+     * @param rNodeA the node at the centre of mass of the first capsule
+     * @param rNodeB the node at the centre of mass of the second capsule
+     * @param shortestDistance the shortest distance between the two capsules
+     * @param rVecAToB filled in as a unit vector from the contact point on capsule A to that on capsule B
+     * @param rContactDistA filled in as the distance from the centre of mass of capsule A to contact point
+     * @param rContactDistB filled in as the distance from the centre of mass of capsule B to contact point
+     */
+    void CalculateForceDirectionAndContactPoints(Node<SPACE_DIM>& rNodeA,
+                                                 Node<SPACE_DIM>& rNodeB,
+                                                 const double shortestDistance,
+                                                 c_vector<double, SPACE_DIM>& rVecAToB,
+                                                 double& rContactDistA,
+                                                 double& rContactDistB);
 
 public:
 
@@ -62,20 +79,11 @@ public:
     virtual ~CapsuleForce() = default;
 
     /**
-     * Overridden CalculateForceBetweenNodes() method.
+     * Overridden AddForceContribution() method.
      *
-     * Calculates the force between two nodes.
-     *
-     * Note that this assumes they are connected and is called by AddForceContribution()
-     *
-     * @param nodeAGlobalIndex index of one neighbouring node
-     * @param nodeBGlobalIndex index of the other neighbouring node
-     * @param rCellPopulation the cell population
-     * @return The force exerted on Node A by Node B.
+     * @param rCellPopulation reference to the cell population
      */
-    c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
-                                                     unsigned nodeBGlobalIndex,
-                                                     AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+    void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
     /**
      * Overridden OutputForceParameters() method.

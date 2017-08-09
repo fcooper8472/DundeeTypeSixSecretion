@@ -37,7 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DUNDEETYPESIXSECRETIONENUMERATIONS_HPP_
 
 /**
- *  Various enumerations are specified for naming parts of the Drosophila Oogenesis models.
+ *  Various enumerations are specified for naming concepts in this project.
  */
 enum NodeAttributeVectorPositions : std::size_t
 {

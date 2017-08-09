@@ -48,8 +48,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscTools.hpp"
 #include "PetscException.hpp"
 
-#include "Hello.hpp"
-
 int main(int argc, char *argv[])
 {
     // This sets up PETSc and prints out copyright information, etc.
@@ -61,23 +59,8 @@ int main(int argc, char *argv[])
     // you clean up PETSc before quitting.
     try
     {
-        if (argc<2)
-        {
-            ExecutableSupport::PrintError("Usage: ExampleApp arguments ...", true);
-            exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
-        }
-        else
-        {
-            for (int i=1; i<argc; i++)
-            {
-                if (PetscTools::AmMaster())
-                {
-                    std::string arg_i(argv[i]);
-                    Hello world(arg_i);
-                    std::cout << "Argument " << i << " is " << world.GetMessage() << std::endl << std::flush;
-                }
-            }
-        }
+        ExecutableSupport::PrintError("Usage: ExampleApp arguments ...", true);
+        exit_code = ExecutableSupport::EXIT_BAD_ARGUMENTS;
     }
     catch (const Exception& e)
     {
