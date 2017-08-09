@@ -2,18 +2,23 @@
 #ifndef _TESTCAPSULEFORCE_HPP_
 #define _TESTCAPSULEFORCE_HPP_
 
-#include <cxxtest/TestSuite.h>
+#include "AbstractCellBasedTestSuite.hpp"
 
+#include "CapsuleForce.hpp"
+#include "CellsGenerator.hpp"
 #include "CheckpointArchiveTypes.hpp"
-#include "TypeSixSecretionEnumerations.hpp"
-#include "OutputFileHandler.hpp"
+#include "DifferentiatedCellProliferativeType.hpp"
+#include "NoCellCycleModel.hpp"
 #include "Node.hpp"
 #include "NodeAttributes.hpp"
+#include "NodeBasedCellPopulation.hpp"
+#include "NodesOnlyMesh.hpp"
+#include "OutputFileHandler.hpp"
 #include "PetscTools.hpp"
-#include "CapsuleForce.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
-class TestCapsuleForce : public CxxTest::TestSuite
+class TestCapsuleForce : public AbstractCellBasedTestSuite
 {
 public:
 
@@ -315,6 +320,55 @@ public:
             double radiusB = 3.45;
 
             TS_ASSERT_DELTA(force.CalculateForceMagnitude(overlap, radiusA, radiusB), 303.731332875, 1e-6);
+        }
+    }
+
+    void TestAddForceContribution() throw(Exception)
+    {
+        // Create two nodes
+        std::vector<Node<2>*> nodes;
+        nodes.push_back(new Node<2>(0u,  false,  0.0, 0.0));
+        nodes.push_back(new Node<2>(1u,  false,  2.0, 0.0));
+
+        // Create mesh with massive interaction distance so all nodes interact with each other
+        NodesOnlyMesh<2> mesh;
+        mesh.ConstructNodesWithoutMesh(nodes, 1e6);
+
+        mesh.GetNode(0u)->AddNodeAttribute(0.0);
+        mesh.GetNode(0u)->ClearAppliedForce();
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_ANGLE] = 0.0;
+
+        mesh.GetNode(1u)->AddNodeAttribute(0.0);
+        mesh.GetNode(1u)->ClearAppliedForce();
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_ANGLE] = 0.0;
+
+        //Create cells
+        std::vector<CellPtr> cells;
+        auto p_diff_type = boost::make_shared<DifferentiatedCellProliferativeType>();
+        CellsGenerator<NoCellCycleModel, 2> cells_generator;
+        cells_generator.GenerateBasicRandom(cells, mesh.GetNumNodes(), p_diff_type);
+
+        // Create cell population
+        NodeBasedCellPopulation<2> population(mesh, cells);
+
+        CapsuleForce<2, 2> force;
+        force.AddForceContribution(population);
+
+        // Nodes 0 and 1 are too far apart to interact with each other, so no applied force or angle
+        {
+            TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetAppliedForce()[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetAppliedForce()[1], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_ANGLE], 0.0, 1e-6);
+
+            TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetAppliedForce()[0], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetAppliedForce()[1], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_ANGLE], 0.0, 1e-6);
         }
     }
 };
