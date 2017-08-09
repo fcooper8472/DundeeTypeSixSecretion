@@ -8,6 +8,8 @@
 #include <boost/geometry/geometries/point.hpp>
 #include <cmath>
 
+#include "Debug.hpp"
+
 template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CapsuleForce()
         : AbstractForce<ELEMENT_DIM, SPACE_DIM>(),
@@ -275,9 +277,6 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
             r_node_a.AddAppliedForceContribution(force_b_a);
         }
     }
-
-
-
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

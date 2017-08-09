@@ -18,6 +18,8 @@
 #include "TypeSixSecretionEnumerations.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
+#include "Debug.hpp"
+
 class TestCapsuleForce : public AbstractCellBasedTestSuite
 {
 public:
@@ -336,6 +338,7 @@ public:
 
         mesh.GetNode(0u)->AddNodeAttribute(0.0);
         mesh.GetNode(0u)->ClearAppliedForce();
+        mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
@@ -343,6 +346,7 @@ public:
 
         mesh.GetNode(1u)->AddNodeAttribute(0.0);
         mesh.GetNode(1u)->ClearAppliedForce();
+        mesh.GetNode(1u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
         mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
         mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
         mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
@@ -357,8 +361,11 @@ public:
         // Create cell population
         NodeBasedCellPopulation<2> population(mesh, cells);
 
+        MARK;
         CapsuleForce<2, 2> force;
+        MARK;
         force.AddForceContribution(population);
+        MARK;
 
         // Nodes 0 and 1 are too far apart to interact with each other, so no applied force or angle
         {
@@ -370,6 +377,8 @@ public:
             TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetAppliedForce()[1], 0.0, 1e-6);
             TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_ANGLE], 0.0, 1e-6);
         }
+
+        MARK;
     }
 };
 
