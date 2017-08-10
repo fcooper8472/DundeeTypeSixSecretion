@@ -51,6 +51,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NodesOnlyMesh.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "Cell.hpp"
+#include "RandomNumberGenerator.hpp"
+#include "UblasCustomFunctions.hpp"
 
 
 // Header files included in this project
@@ -58,6 +60,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ForwardEulerNumericalMethodForCapsules.hpp"
 #include "CapsuleForce.hpp"
 #include "CapsuleOrientationWriter.hpp"
+#include "CapsuleScalingWriter.hpp"
+#include "SquareBoundaryCondition.hpp"
 
 // Should usually be called last.
 #include "PetscSetupAndFinalize.hpp"
@@ -72,12 +76,34 @@ public:
     {
         EXIT_IF_PARALLEL;
 
-        /* We then create a couple of cells at the base of each germarium.
-         * (we put two cells in each crypt to set off delta-notch patterning) */
+        const unsigned num_nodes = 20u;
+        auto p_rand_gen = RandomNumberGenerator::Instance();
+
+        // Create some capsules
         std::vector<Node<2>*> nodes;
-        nodes.push_back(new Node<2>(0u,  false,  0.0, 0.0));
-        nodes.push_back(new Node<2>(1u,  false,  1.0, 0.0));
-        nodes.push_back(new Node<2>(2u,  false,  2.0, 0.0));
+
+        nodes.push_back(new Node<2>(0u, Create_c_vector(1.0, 0.0)));
+        for (unsigned node_idx = 1; node_idx < num_nodes; ++node_idx)
+        {
+            c_vector<double, 2> safe_location;
+
+            bool safe = false;
+            while(!safe)
+            {
+                safe = true;
+                safe_location = Create_c_vector(10.0 * p_rand_gen->ranf(), 10.0 * p_rand_gen->ranf());
+
+                for(auto&& p_node : nodes)
+                {
+                    if(norm_2(p_node->rGetLocation() - safe_location) < 2.0)
+                    {
+                        safe = false;
+                    }
+                }
+            }
+
+            nodes.push_back(new Node<2>(node_idx, safe_location));
+        }
 
         /*
          * We then convert this list of nodes to a `NodesOnlyMesh`,
@@ -85,35 +111,33 @@ public:
          */
         NodesOnlyMesh<2> mesh;
         mesh.ConstructNodesWithoutMesh(nodes, 1.5);
-        
+
         mesh.GetNode(0u)->AddNodeAttribute(0.0);
         mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-        mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.25 * M_PI;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
-        
-        mesh.GetNode(1u)->AddNodeAttribute(0.0);
-        mesh.GetNode(1u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-        mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
-        mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
-        mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
-        
-        mesh.GetNode(2u)->AddNodeAttribute(0.0);
-        mesh.GetNode(2u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-        mesh.GetNode(2u)->rGetNodeAttributes()[NA_ANGLE] = 0.25 * M_PI;
-        mesh.GetNode(2u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
-        mesh.GetNode(2u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
-        
+
+        for (unsigned node_idx = 1; node_idx < mesh.GetNumNodes(); ++node_idx)
+        {
+            mesh.GetNode(node_idx)->AddNodeAttribute(0.0);
+            mesh.GetNode(node_idx)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_ANGLE] = 2.0 * M_PI * p_rand_gen->ranf();
+            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_LENGTH] = p_rand_gen->NormalRandomDeviate(2.0, 0.5);
+            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+        }
+
         //Create cells
         std::vector<CellPtr> cells;
         auto p_diff_type = boost::make_shared<DifferentiatedCellProliferativeType>();
         CellsGenerator<NoCellCycleModel, 2> cells_generator;
-        cells_generator.GenerateBasicRandom(cells, 3u, p_diff_type);
+        cells_generator.GenerateBasicRandom(cells, mesh.GetNumNodes(), p_diff_type);
 
         // Create cell population
         NodeBasedCellPopulation<2> population(mesh, cells);
 
         population.AddCellWriter<CapsuleOrientationWriter>();
+        population.AddCellWriter<CapsuleScalingWriter>();
 
         // Create simulation
         OffLatticeSimulation<2> simulator(population);
@@ -131,8 +155,11 @@ public:
         auto p_calsule_force = boost::make_shared<CapsuleForce<2>>();
         simulator.AddForce(p_calsule_force);
 
+//        auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
+//        simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
+
         /* We then set an end time and run the simulation */
-        simulator.SetEndTime(0.1);
+        simulator.SetEndTime(1.0);
         simulator.Solve();
     }
 };
