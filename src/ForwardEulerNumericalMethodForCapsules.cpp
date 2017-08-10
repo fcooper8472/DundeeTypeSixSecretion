@@ -57,14 +57,8 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
         double radius = node_iter->rGetNodeAttributes()[NA_RADIUS];
         double length = node_iter->rGetNodeAttributes()[NA_LENGTH];
 
-        double mass = M_PI * radius * radius * (length + 4.0 * radius / 3.0);
-
-        double moment_of_inertia = M_PI * radius * radius * (length * (length * length / 12.0 + radius * radius / 4.0)
-                                                             + (4.0 * radius / 3.0) * (0.4 * radius * radius + 0.5 * length * length + 3.0 * length * radius / 8.0));
-
-
-        node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce() / mass;
-        node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] / moment_of_inertia;
+        node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce() / CalculateMassOfCapsule(length, radius);
+        node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] / CalculateMomentOfInertiaOfCapsule(length, radius);
     }
 
 //    auto p_rand_gen = RandomNumberGenerator::Instance();
@@ -85,6 +79,25 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 //        node_iter->rGetModifiableLocation() += random_movement;
 //        node_iter->rGetNodeAttributes()[NA_ANGLE] += random_rotation;
 //    }
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+double ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM, SPACE_DIM>::CalculateMassOfCapsule(const double length, const double radius)
+{
+    return M_PI * radius * radius * (length + 4.0 * radius / 3.0);
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+double ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM, SPACE_DIM>::CalculateMomentOfInertiaOfCapsule(const double length, const double radius)
+{
+    const double l = length;
+    const double r = radius;
+
+    constexpr double f1_12 = 1.0 / 12.0;
+    constexpr double f4_3 = 4.0 / 3.0;
+    constexpr double f3_8 = 3.0 / 8.0;
+
+    return M_PI * r * r * (l * (f1_12 * l * l + 0.25 * r * r) + f4_3 * r * (0.4 * r * r + 0.25 * l * l + f3_8 * l * r));
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

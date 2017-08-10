@@ -52,6 +52,7 @@ private:
 
     /** Needed for serialization. */
     friend class boost::serialization::access;
+    friend class TestNumericalMethodForCapsules;
 
     /**
      * Save or restore the simulation.
@@ -64,6 +65,22 @@ private:
     {
         archive & boost::serialization::base_object<AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM> >(*this);
     }
+
+    /**
+     * Calculate the 3D mass per unit volume of a 2D capsule (a cylinder capped by two hemispheres).
+     * @param length the length of the cylinder
+     * @param radius the radius of the cylinder and each hemisphere
+     * @return the mass per unit volume of the capsule
+     */
+    double CalculateMassOfCapsule(const double length, const double radius);
+
+    /**
+     * Calculate the 3D moment of inertia of a 2D capsule (a cylinder capped by two hemispheres), about its centre.
+     * @param length the length of the cylinder
+     * @param radius the radius of the cylinder and each hemisphere
+     * @return the moment of inertia of the capsule
+     */
+    double CalculateMomentOfInertiaOfCapsule(const double length, const double radius);
 
 public:
 

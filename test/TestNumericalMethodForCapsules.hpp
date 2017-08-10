@@ -40,12 +40,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CheckpointArchiveTypes.hpp"
 
-#include "DundeeTypeSixSecretionEnumerations.hpp"
+#include "TypeSixSecretionEnumerations.hpp"
 
 #include "ForwardEulerNumericalMethodForCapsules.hpp"
 #include "PetscSetupAndFinalize.hpp"
 
-class TestCapsuleForce : public CxxTest::TestSuite
+class TestNumericalMethodForCapsules : public CxxTest::TestSuite
 {
 
 
@@ -54,6 +54,43 @@ public:
     void TestNumericalMethod() throw(Exception)
     {
         ForwardEulerNumericalMethodForCapsules<2, 2> numerical_method;
+    }
+
+    void TestCalculateMassOfCapsule() throw(Exception)
+    {
+        ForwardEulerNumericalMethodForCapsules<2, 2> method;
+
+        // No radius -> no mass
+        TS_ASSERT_DELTA(method.CalculateMassOfCapsule(1.23, 0.0), 0.0, 1e-6);
+
+        // No length -> mass of sphere
+        TS_ASSERT_DELTA(method.CalculateMassOfCapsule(0.0, 1.23), 7.79478146201, 1e-6);
+
+        // Some odd numbers
+        TS_ASSERT_DELTA(method.CalculateMassOfCapsule(2.34, 3.45), 259.506077522, 1e-6);
+    }
+
+    void TestCalculateMomentOfInertiaOfCapsule() throw(Exception)
+    {
+        ForwardEulerNumericalMethodForCapsules<2, 2> method;
+
+        // No radius -> no mass
+        TS_ASSERT_DELTA(method.CalculateMomentOfInertiaOfCapsule(1.23, 0.0), 0.0, 1e-6);
+
+        // No length -> moment of inertia of sphere
+        TS_ASSERT_DELTA(method.CalculateMomentOfInertiaOfCapsule(0.0, 1.23), 4.71708994955, 1e-6);
+
+        // Calculate MoI for rod length 234, radius 1.23, and rod of length 234 + 2*radius.
+        // The real answer is between the two.
+        constexpr double r = 1.23;
+        constexpr double l = 234.0;
+        constexpr double l2 = l + r + r;
+
+        constexpr double lower_bound = (M_PI * r * r * l / 12.0) * (3.0 * r * r + l * l);
+        constexpr double upper_bound = (M_PI * r * r * l2 / 12.0) * (3.0 * r * r + l2 * l2);
+
+        TS_ASSERT(method.CalculateMomentOfInertiaOfCapsule(l, r) > lower_bound);
+        TS_ASSERT(method.CalculateMomentOfInertiaOfCapsule(l, r) < upper_bound);
     }
 
 };
