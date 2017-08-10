@@ -57,6 +57,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TypeSixSecretionEnumerations.hpp"
 #include "ForwardEulerNumericalMethodForCapsules.hpp"
 #include "CapsuleForce.hpp"
+#include "CapsuleOrientationWriter.hpp"
 
 // Should usually be called last.
 #include "PetscSetupAndFinalize.hpp"
@@ -112,10 +113,12 @@ public:
         // Create cell population
         NodeBasedCellPopulation<2> population(mesh, cells);
 
+        population.AddCellWriter<CapsuleOrientationWriter>();
+
         // Create simulation
         OffLatticeSimulation<2> simulator(population);
         simulator.SetOutputDirectory("CapsuleSimulation");
-        simulator.SetDt(1.0/120.0);
+        simulator.SetDt(1.0/1200.0);
         simulator.SetSamplingTimestepMultiple(1u);
 
         auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
@@ -129,7 +132,7 @@ public:
         simulator.AddForce(p_calsule_force);
 
         /* We then set an end time and run the simulation */
-        simulator.SetEndTime(100.0);
+        simulator.SetEndTime(0.1);
         simulator.Solve();
     }
 };
