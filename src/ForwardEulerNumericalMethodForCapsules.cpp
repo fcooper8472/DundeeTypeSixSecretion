@@ -34,7 +34,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "ForwardEulerNumericalMethodForCapsules.hpp"
+#include "RandomNumberGenerator.hpp"
 #include "TypeSixSecretionEnumerations.hpp"
+#include "UblasCustomFunctions.hpp"
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::ForwardEulerNumericalMethodForCapsules()
@@ -52,9 +54,37 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
          node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
          ++node_iter)
     {
-        node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce();
-        node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE];
+        double radius = node_iter->rGetNodeAttributes()[NA_RADIUS];
+        double length = node_iter->rGetNodeAttributes()[NA_LENGTH];
+
+        double mass = M_PI * radius * radius * (length + 4.0 * radius / 3.0);
+
+        double moment_of_inertia = M_PI * radius * radius * (length * (length * length / 12.0 + radius * radius / 4.0)
+                                                             + (4.0 * radius / 3.0) * (0.4 * radius * radius + 0.5 * length * length + 3.0 * length * radius / 8.0));
+
+
+        node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce() / mass;
+        node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] / moment_of_inertia;
     }
+
+//    auto p_rand_gen = RandomNumberGenerator::Instance();
+
+//    for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
+//         node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
+//         ++node_iter)
+//    {
+//        double angle = node_iter->rGetNodeAttributes()[NA_ANGLE];
+//
+//        // Move a random amount
+//        auto random_movement = Create_c_vector(cos(angle), sin(angle));
+//        random_movement *= p_rand_gen->NormalRandomDeviate(0.01, 0.005);
+//
+//        // Rotate a random amount
+//        double random_rotation = p_rand_gen->NormalRandomDeviate(0.0, 0.005 * M_PI);
+//
+//        node_iter->rGetModifiableLocation() += random_movement;
+//        node_iter->rGetNodeAttributes()[NA_ANGLE] += random_rotation;
+//    }
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
