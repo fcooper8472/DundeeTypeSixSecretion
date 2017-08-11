@@ -61,24 +61,24 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
         node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] / CalculateMomentOfInertiaOfCapsule(length, radius);
     }
 
-//    auto p_rand_gen = RandomNumberGenerator::Instance();
+    auto p_rand_gen = RandomNumberGenerator::Instance();
 
-//    for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
-//         node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
-//         ++node_iter)
-//    {
-//        double angle = node_iter->rGetNodeAttributes()[NA_ANGLE];
-//
-//        // Move a random amount
-//        auto random_movement = Create_c_vector(cos(angle), sin(angle));
-//        random_movement *= p_rand_gen->NormalRandomDeviate(0.01, 0.005);
-//
-//        // Rotate a random amount
+    for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
+         node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
+         ++node_iter)
+    {
+        double angle = node_iter->rGetNodeAttributes()[NA_ANGLE];
+
+        // Move a random amount
+        auto random_movement = Create_c_vector(cos(angle), sin(angle));
+        random_movement *= p_rand_gen->NormalRandomDeviate(0.01, 0.005);
+
+        // Rotate a random amount
 //        double random_rotation = p_rand_gen->NormalRandomDeviate(0.0, 0.005 * M_PI);
-//
-//        node_iter->rGetModifiableLocation() += random_movement;
+
+        node_iter->rGetModifiableLocation() += random_movement;
 //        node_iter->rGetNodeAttributes()[NA_ANGLE] += random_rotation;
-//    }
+    }
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
