@@ -55,27 +55,27 @@ void SquareBoundaryCondition::ImposeBoundaryCondition(const std::map<Node<2>*, c
     // Iterate over the cell population
     for (auto cell_iter = this->mpCellPopulation->Begin(); cell_iter != this->mpCellPopulation->End(); ++cell_iter)
     {
-        const c_vector<double,2> cell_location = this->mpCellPopulation->GetLocationOfCellCentre(*cell_iter);
         unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
         Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
+        c_vector<double,2>& cell_location = p_node->rGetModifiableLocation();
 
         double& angle = p_node->rGetNodeAttributes()[NA_ANGLE];
 
         if (cell_location[0] < 0.0)
         {
-            angle = 0.0;
+            cell_location[0] = 0.0;
         }
-        else if ((cell_location[0] > 10.0))
+        if ((cell_location[0] > 10.0))
         {
-            angle = M_PI;
+            cell_location[0] = 10.0;
         }
-        else if ((cell_location[1] < 0.0))
+        if ((cell_location[1] < 0.0))
         {
-            angle = 0.5 * M_PI;
+            cell_location[1] = 0.0;
         }
-        else if ((cell_location[1] > 10.0))
+        if ((cell_location[1] > 10.0))
         {
-            angle = 1.5 * M_PI;
+            cell_location[1] = 10.0;
         }
     }
 }
