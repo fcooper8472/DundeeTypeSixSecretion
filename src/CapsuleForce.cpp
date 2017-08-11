@@ -111,6 +111,11 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
     double angle_for_calculation;
     bool point_in_capsule_a;
 
+    if (shortestDistance < 1e-12)
+    {
+    	EXCEPTION("Centre lines of capsules have collided - something is wrong!");
+    }
+
     if (fabs(boost::geometry::distance(capsule_a_end_1, capsule_axis_b) - shortestDistance) < 1e-12)
     {
         end_point[0] = capsule_a_end_1.get<0>();
@@ -203,7 +208,15 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateForceMagnitude(const double
                                                                     const double radiusB)
 {
     const double effective_radius = 2.0 * radiusA * radiusB / (radiusA + radiusB);
-    return 4.0 * mYoungModulus * pow(overlap, 1.5) * sqrt(effective_radius) / 3.0;
+    const double force = 4.0 * mYoungModulus * pow(overlap, 1.5) * sqrt(effective_radius) / 3.0;
+
+    // Horrific hack to stop explosions after division and before appropriate length is set!
+    if (overlap > radiusA)
+    {
+    	return 0.0;
+    }
+
+    return force;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

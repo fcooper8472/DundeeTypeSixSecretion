@@ -63,7 +63,7 @@ public:
 
         // Create a simulation
         OffLatticeSimulation<2> simulation(cell_population);
-        simulation.SetOutputDirectory("TestNodeBasedSimulationWithTypeSixMachineModifier");
+        simulation.SetOutputDirectory("TestTypeSixMachineModifierException1");
         simulation.SetEndTime(simulation.GetDt()/2.0);
 
         // Create a force law and pass it to the simulation
@@ -122,7 +122,7 @@ public:
         // Create a volume-tracking modifier and pass it to the simulation
         MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
         simulation.AddSimulationModifier(p_modifier);        
-        p_modifier->SetOutputDirectory("TestTypeSixMachineModifierException");
+        p_modifier->SetOutputDirectory("TestTypeSixMachineModifierException2");
         
         // Test the correct exception is thrown if any cell does not have a TypeSixMachineProperty
         TS_ASSERT_THROWS_THIS(simulation.Solve(),

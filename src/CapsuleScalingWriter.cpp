@@ -36,7 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CapsuleScalingWriter.hpp"
 #include "TypeSixSecretionEnumerations.hpp"
 #include "NodeBasedCellPopulation.hpp"
-
+#include "Debug.hpp"
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::CapsuleScalingWriter()
@@ -58,6 +58,7 @@ double CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(
     {
         unsigned node_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
         scaling = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_LENGTH];
+//        PRINT_VARIABLE(scaling);
     }
 
     return scaling;

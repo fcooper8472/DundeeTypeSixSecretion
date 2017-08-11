@@ -7,6 +7,9 @@
 #include "TypeSixSecretionEnumerations.hpp"
 #include "OutputFileHandler.hpp"
 #include "NodesOnlyMesh.hpp"
+#include "UniformCellCycleModel.hpp"
+#include "NodeBasedCellPopulation.hpp"
+#include "Debug.hpp"
 
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
@@ -76,7 +79,8 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
             // Store the location of this machine
             unsigned node_index = rCellPopulation.GetLocationIndexUsingCell(*cell_iter);
             Node<DIM>* p_node = rCellPopulation.GetNode(node_index);
-            auto cell_centre = p_node->rGetLocation();
+            c_vector<double, DIM> cell_centre;
+            cell_centre = p_node->rGetLocation();
             double cell_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
             double L = p_node->rGetNodeAttributes()[NA_LENGTH];
             double R = p_node->rGetNodeAttributes()[NA_RADIUS];
@@ -114,7 +118,7 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
             }
 
             // Compute and store the coordinates of this machine            
-            c_vector<double, DIM> machine_coords;
+            c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
             machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
             machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
             
@@ -194,6 +198,9 @@ void TypeSixMachineModifier<DIM>::SetupSolve(AbstractCellPopulation<DIM,DIM>& rC
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
+	PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
+
+
     ///\todo Make sure the cell population is updated?
     //rCellPopulation.Update();
 
@@ -297,6 +304,29 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
 		r_data = new_data;
     }
+
+    // Update cell lengths
+	// Iterate over cell population
+	for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+	   cell_iter != rCellPopulation.End();
+	   ++cell_iter)
+	{
+		  double cell_age = cell_iter->GetAge();
+		  double initial_length = 1.0;
+
+		  if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
+		  {
+			  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
+
+			  assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)));
+			  Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
+
+			  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+			  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+
+			  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+		  }
+	}
 }
 
 template<unsigned DIM>
