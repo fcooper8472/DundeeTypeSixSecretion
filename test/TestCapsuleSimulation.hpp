@@ -16,6 +16,7 @@
 #include "NodesOnlyMesh.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "Cell.hpp"
+#include "CellIdWriter.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "UblasCustomFunctions.hpp"
 #include "UniformCellCycleModel.hpp"
@@ -162,15 +163,15 @@ public:
         mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
-        mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
 
         for (unsigned node_idx = 1; node_idx < mesh.GetNumNodes(); ++node_idx)
         {
             mesh.GetNode(node_idx)->AddNodeAttribute(0.0);
             mesh.GetNode(node_idx)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
             mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_ANGLE] = 2.0 * M_PI * p_rand_gen->ranf();
-            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_LENGTH] = p_rand_gen->NormalRandomDeviate(2.0, 0.5);
-            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_LENGTH] = p_rand_gen->NormalRandomDeviate(2.0, 0.05);
+            mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_RADIUS] = p_rand_gen->NormalRandomDeviate(0.5, 0.01);
         }
 
         //Create cells
@@ -184,12 +185,13 @@ public:
 
         population.AddCellWriter<CapsuleOrientationWriter>();
         population.AddCellWriter<CapsuleScalingWriter>();
+        population.AddCellWriter<CellIdWriter>();
 
         // Create simulation
         OffLatticeSimulation<2> simulator(population);
         simulator.SetOutputDirectory("TestLongerCapsuleSimulation");
-        simulator.SetDt(1.0/1200.0);
-        simulator.SetSamplingTimestepMultiple(1u);
+        simulator.SetDt(1.0/120.0);
+        simulator.SetSamplingTimestepMultiple(5u);
 
         auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
         simulator.SetNumericalMethod(p_numerical_method);
@@ -201,11 +203,11 @@ public:
         auto p_calsule_force = boost::make_shared<CapsuleForce<2>>();
         simulator.AddForce(p_calsule_force);
 
-//        auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
-//        simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
+        auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
+        simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
 
         /* We then set an end time and run the simulation */
-        simulator.SetEndTime(150.0/1200.0);
+        simulator.SetEndTime(10.0);
         simulator.Solve();
     }
 
