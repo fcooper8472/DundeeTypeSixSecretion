@@ -1,6 +1,5 @@
 #include "CapsuleBasedDivisionRule.hpp"
 #include "TypeSixSecretionEnumerations.hpp"
-#include "Debug.hpp"
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBasedDivisionRule<ELEMENT_DIM, SPACE_DIM>::CalculateCellDivisionVector(
     CellPtr pParentCell,
@@ -20,8 +19,9 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
         	Node<SPACE_DIM>* p_node = rCellPopulation.GetNodeCorrespondingToCell(pParentCell);
 
         	const double orientation_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
-        	const double distance = 0.25*p_node->rGetNodeAttributes()[NA_LENGTH] + 0.5*p_node->rGetNodeAttributes()[NA_RADIUS];
-
+        	//const double distance = 0.25*p_node->rGetNodeAttributes()[NA_LENGTH] + 0.5*p_node->rGetNodeAttributes()[NA_RADIUS];
+        	//const double distance = 0.5*p_node->rGetNodeAttributes()[NA_LENGTH] + p_node->rGetNodeAttributes()[NA_RADIUS];
+        	const double distance=1.5;
             axis_vector(0) = distance*cos(orientation_angle);
             axis_vector(1) = distance*sin(orientation_angle);
             break;
@@ -38,8 +38,9 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
     c_vector<double, SPACE_DIM> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - axis_vector;
     c_vector<double, SPACE_DIM> daughter_position = parent_position + 2.0*axis_vector;
 
-    PRINT_VECTOR(parent_position);
-    PRINT_VECTOR(daughter_position);
+
+    c_vector<double, SPACE_DIM> old_parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) ;
+
 
     std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > positions(parent_position, daughter_position);
     return positions;
