@@ -38,6 +38,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TypeSixSecretionEnumerations.hpp"
 #include "UblasCustomFunctions.hpp"
 
+#include "UniformCellCycleModel.hpp"
+
+#include "Debug.hpp"
+#include "NodeBasedCellPopulation.hpp"
+
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::ForwardEulerNumericalMethodForCapsules()
     : AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM>()
@@ -47,6 +52,54 @@ ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::ForwardEulerNumer
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNodePositions(double dt)
 {
+
+	  NodeBasedCellPopulation<SPACE_DIM>* p_node_population= dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
+
+	  double current_time=SimulationTime::Instance()->GetTime();
+	  PRINT_VARIABLE(current_time);
+
+	for (auto cell_iter = p_node_population->Begin();
+			   cell_iter != p_node_population->End();
+			   ++cell_iter)
+			{
+
+
+				  if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
+				  {
+
+                      if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
+					  {
+						  double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
+						  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
+
+						  double initial_length = 2.0;
+						  if (cell_age >= cell_cycle_time)
+						  {
+						 		cell_age=0.0;
+						  }
+
+
+					  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
+
+
+					  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+
+					  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+					  //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+
+
+					  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+							  std::cout<< "Ahh " << new_length << "\n";
+
+							  PRINT_VARIABLE(new_length);
+					      }
+
+				  }
+			}
+
+
+
+
     // Apply forces to each cell, and save a vector of net forces F
     this->ComputeForcesIncludingDamping();
 

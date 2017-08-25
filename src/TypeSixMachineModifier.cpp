@@ -198,7 +198,6 @@ void TypeSixMachineModifier<DIM>::SetupSolve(AbstractCellPopulation<DIM,DIM>& rC
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
-	PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
 
 
     ///\todo Make sure the cell population is updated?
@@ -219,14 +218,14 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
         ///\todo change parameters to be member variables
-        double k_1 = 1.0;
-        double k_2 = 1.0;
+        double k_1 = 0.01;
+        double k_2 = 0.5;
         double k_3 = 1.0;
         double k_4 = 1.0;
         double k_5 = 1.0;
         double k_6 = 1.0;
         double k_7 = 1.0;
-        double k_8 = 1.0;
+        double k_8 = 0.0;
 
 	    double dt = SimulationTime::Instance()->GetTimeStep();
         assert((k_1 + k_2 + k_3 + k_4 + k_5 + k_6 + k_7 + k_8)*dt <= 1.0);
@@ -305,28 +304,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		r_data = new_data;
     }
 
-    // Update cell lengths
-	// Iterate over cell population
-	for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
-	   cell_iter != rCellPopulation.End();
-	   ++cell_iter)
-	{
-		  double cell_age = cell_iter->GetAge();
-		  double initial_length = 1.0;
 
-		  if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
-		  {
-			  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
-
-			  assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)));
-			  Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
-
-			  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
-			  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
-
-			  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
-		  }
-	}
 }
 
 template<unsigned DIM>
