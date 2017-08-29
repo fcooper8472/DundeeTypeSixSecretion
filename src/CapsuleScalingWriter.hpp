@@ -39,6 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
 #include "AbstractCellWriter.hpp"
+#include "UblasVectorInclude.hpp"
 
 /**
  * A class written using the visitor pattern for writing the scaling of two-dimensional capsules.
@@ -74,17 +75,17 @@ public:
     CapsuleScalingWriter();
 
     /**
-     * Overridden GetCellDataForVtkOutput() method.
+     * Overridden GetVectorCellDataForVtkOutput() method.
      *
-     * Get a double associated with a cell. This method reduces duplication
+     * Get a c_vector associated with a cell. This method reduces duplication
      * of code between the methods VisitCell() and AddVtkData().
      *
      * @param pCell a cell
      * @param pCellPopulation a pointer to the cell population owning the cell
      *
-     * @return the scaling (length) of the capsule
+     * @return the scaling of the capsule ((radius, length) in 2D)
      */
-    double GetCellDataForVtkOutput(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation);
+    c_vector<double, SPACE_DIM> GetVectorCellDataForVtkOutput(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation);
 
     /**
      * Overridden VisitCell() method.
@@ -92,8 +93,8 @@ public:
      * Visit a cell and write its orientation.
      *
      * Outputs a line of space-separated values of the form:
-     * ...[location index] [cell id] [x-pos] [y-pos] [z-pos] [cell scaling] ...
-     * with [z-pos] included for 3 dimensional simulations.
+     * ...[location index] [cell id] [x-pos] [y-pos] [z-pos] [radius] [length] [z-scaling] ...
+     * with [z-pos] and [z-scaling] included for 3 dimensional simulations.
      *
      * This is appended to the output written by AbstractCellBasedWriter, which is a single
      * value [present simulation time], followed by a tab.

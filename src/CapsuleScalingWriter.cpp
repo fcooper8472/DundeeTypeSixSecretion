@@ -42,23 +42,23 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::CapsuleScalingWriter()
     : AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>("cellscaling.dat")
 {
-    this->mVtkCellDataName = "Cell scaling";
-    this->mOutputScalarData = true;
-    this->mOutputVectorData = false;
+    this->mVtkVectorCellDataName = "Cell scaling";
+    this->mOutputScalarData = false;
+    this->mOutputVectorData = true;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-double CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::GetCellDataForVtkOutput(
+c_vector<double, SPACE_DIM>  CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::GetVectorCellDataForVtkOutput(
         CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation)
 {
-    assert(this->mOutputScalarData);
+    assert(this->mOutputVectorData);
 
-    double scaling = 0.0;
+    c_vector<double, SPACE_DIM> scaling;
     if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(pCellPopulation))
     {
         unsigned node_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
-        scaling = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_LENGTH];
-//        PRINT_VARIABLE(scaling);
+        scaling[0] = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_RADIUS];
+        scaling[1] = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_LENGTH];
     }
 
     return scaling;
@@ -71,15 +71,17 @@ void CapsuleScalingWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(
     unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
     unsigned cell_id = pCell->GetCellId();
     c_vector<double, SPACE_DIM> cell_location = pCellPopulation->GetLocationOfCellCentre(pCell);
-    double cell_scaling = GetCellDataForVtkOutput(pCell, pCellPopulation);
+    c_vector<double, SPACE_DIM> cell_scaling = GetVectorCellDataForVtkOutput(pCell, pCellPopulation);
 
     *this->mpOutStream << location_index << " " << cell_id << " ";
     for (unsigned i=0; i<SPACE_DIM; i++)
     {
         *this->mpOutStream << cell_location[i] << " ";
     }
-
-    *this->mpOutStream << cell_scaling << " ";
+    for (unsigned i=0; i<SPACE_DIM; i++)
+    {
+        *this->mpOutStream << cell_scaling[i] << " ";
+    }
 }
 
 // Explicit instantiation
