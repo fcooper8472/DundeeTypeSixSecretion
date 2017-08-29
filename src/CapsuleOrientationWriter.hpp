@@ -39,6 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
 #include "AbstractCellWriter.hpp"
+#include "UblasVectorInclude.hpp"
 
 /**
  * A class written using the visitor pattern for writing the orientation of two-dimensional capsules.

@@ -3,6 +3,10 @@
 #include "TypeSixSecretionEnumerations.hpp"
 #include "NodeBasedCellPopulation.hpp"
 
+#ifdef CHASTE_VTK
+#include <vtkLine.h>
+#endif // CHASTE_VTK
+
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/segment.hpp>
 #include <boost/geometry/geometries/point.hpp>
@@ -67,6 +71,71 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
 }
 
 template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceAttributes(Node<SPACE_DIM>& rNodeA,
+                                                                    Node<SPACE_DIM>& rNodeB,
+                                                                    c_vector<double, SPACE_DIM>& rForceDirection,
+                                                                    double& rOverlap,
+                                                                    double& rContactDistA,
+                                                                    double& rContactDistB)
+{
+    EXCEPT_IF_NOT(SPACE_DIM == 2);
+
+#ifdef CHASTE_VTK
+
+    const auto& location_a = rNodeA.rGetLocation();
+    const auto& location_b = rNodeB.rGetLocation();
+
+    const double angle_a = rNodeA.rGetNodeAttributes()[NA_ANGLE];
+    const double radius_a = rNodeA.rGetNodeAttributes()[NA_RADIUS];
+    const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
+
+    const double angle_b = rNodeB.rGetNodeAttributes()[NA_ANGLE];
+    const double radius_b = rNodeB.rGetNodeAttributes()[NA_RADIUS];
+    const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
+
+    // Calculate the ends of capsule a, with a default value of z = 0
+    double capsule_a_end_1[3] = {location_a[0] + 0.5 * length_a * cos(angle_a),
+                                 location_a[1] + 0.5 * length_a * sin(angle_a), 0.0};
+    double capsule_a_end_2[3] = {location_a[0] - 0.5 * length_a * cos(angle_a),
+                                 location_a[1] - 0.5 * length_a * sin(angle_a), 0.0};
+
+    // Calculate the ends of capsule b, with a default value of z = 0
+    double capsule_b_end_1[3] = {location_b[0] + 0.5 * length_b * cos(angle_b),
+                                 location_b[1] + 0.5 * length_b * sin(angle_b), 0.0};
+    double capsule_b_end_2[3] = {location_b[0] - 0.5 * length_b * cos(angle_b),
+                                 location_b[1] - 0.5 * length_b * sin(angle_b), 0.0};
+
+    // Create two arrays to be filled by the vtk algorithm
+    double closest_point_a[3];
+    double closest_point_b[3];
+
+    // Create two doubles to be filled by the vtk algorithm
+    double parametric_a;
+    double parametric_b;
+
+    const double shortest_dist_squared = vtkLine::DistanceBetweenLineSegments(capsule_a_end_1, capsule_a_end_2,
+                                                                              capsule_b_end_1, capsule_b_end_2,
+                                                                              closest_point_a, closest_point_b,
+                                                                              parametric_a, parametric_b);
+
+    // Fill in the force direction
+    for (unsigned dim = 0; dim < SPACE_DIM; ++dim)
+    {
+        rForceDirection[dim] = closest_point_b[dim] - closest_point_a[dim];
+    }
+    rForceDirection /= norm_2(rForceDirection);
+
+    // Fill in overlap and contact distances
+    rOverlap = radius_a + radius_b - sqrt(shortest_dist_squared);
+    rContactDistA = (parametric_a - 0.5) * length_a;
+    rContactDistB = (parametric_b - 0.5) * length_b;
+
+#else  // CHASTE_VTK not defined
+    EXCEPTION("VTK is required for this calculation");
+#endif // CHASTE_VTK
+}
+
+template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoints(Node<SPACE_DIM>& rNodeA,
                                                                                    Node<SPACE_DIM>& rNodeB,
                                                                                    const double shortestDistance,
@@ -74,6 +143,8 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
                                                                                    double& rContactDistA,
                                                                                    double& rContactDistB)
 {
+
+
     EXCEPT_IF_NOT(SPACE_DIM == 2);
 
     using geom_point = boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian>;
