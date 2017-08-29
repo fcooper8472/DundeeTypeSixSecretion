@@ -59,21 +59,23 @@ void SquareBoundaryCondition::ImposeBoundaryCondition(const std::map<Node<2>*, c
         Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
         c_vector<double,2>& cell_location = p_node->rGetModifiableLocation();
 
+
+        double mLength=20.0;
         if (cell_location[0] < 0.0)
         {
             cell_location[0] = 0.0;
         }
-        if ((cell_location[0] > 10.0))
+        if ((cell_location[0] > mLength))
         {
-            cell_location[0] = 10.0;
+            cell_location[0] = mLength;
         }
         if ((cell_location[1] < 0.0))
         {
             cell_location[1] = 0.0;
         }
-        if ((cell_location[1] > 10.0))
+        if ((cell_location[1] > mLength))
         {
-            cell_location[1] = 10.0;
+            cell_location[1] = mLength;
         }
     }
 }

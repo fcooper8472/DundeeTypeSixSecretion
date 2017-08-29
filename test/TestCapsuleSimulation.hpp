@@ -342,7 +342,7 @@ public:
               PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
           }
 
-    void TestSingleCapsuleSimulationWithDivisionAndMachines() throw (Exception)
+    void NoTestSingleCapsuleSimulationWithDivisionAndMachines() throw (Exception)
            {
        	    EXIT_IF_PARALLEL;
 
@@ -476,6 +476,140 @@ public:
               }
 
 
+    void TestSingleCapsuleSimulationWithMachinesKiller() throw (Exception)
+               {
+           	    EXIT_IF_PARALLEL;
+
+           	    	std::vector<Node<2>*> nodes;
+
+           	         nodes.push_back(new Node<2>(0u, Create_c_vector(4.0, 4.0)));
+           	         nodes.push_back(new Node<2>(1u, Create_c_vector(7.0, 4.0)));
+           	         nodes.push_back(new Node<2>(2u, Create_c_vector(4.0, 5.0)));
+           	         nodes.push_back(new Node<2>(3u, Create_c_vector(7.0, 5.0)));
+
+           	         /*
+           	          * We then convert this list of nodes to a `NodesOnlyMesh`,
+           	          * which doesn't do very much apart from keep track of the nodes.
+           	          */
+           	         NodesOnlyMesh<2> mesh;
+           	         mesh.ConstructNodesWithoutMesh(nodes, 150.5);
+
+           	         mesh.GetNode(0u)->AddNodeAttribute(0.0);
+           	         mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+           	         mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0 * M_PI;
+           	         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+           	         mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+           	         mesh.GetNode(1u)->AddNodeAttribute(0.0);
+           	         mesh.GetNode(1u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+           	         mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = -0.0 * M_PI;
+           	         mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+           	         mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+           	         mesh.GetNode(2u)->AddNodeAttribute(0.0);
+           	         mesh.GetNode(2u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+           	         mesh.GetNode(2u)->rGetNodeAttributes()[NA_ANGLE] = -0.0 * M_PI;
+           	         mesh.GetNode(2u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+           	         mesh.GetNode(2u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+           	         mesh.GetNode(3u)->AddNodeAttribute(0.0);
+           	         mesh.GetNode(3u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+           	         mesh.GetNode(3u)->rGetNodeAttributes()[NA_ANGLE] = 0.0 * M_PI;
+           	         mesh.GetNode(3u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+           	         mesh.GetNode(3u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+           	       c_vector<double, 4> domain_size;
+           	       domain_size[0] = -1000.0;
+           	       domain_size[1] = 1000.0;
+           	       domain_size[2] = -1000.0;
+           	       domain_size[3] = 1000.0;
+           	       mesh.SetInitialBoxCollection(domain_size, 10.0);
+
+                      /*
+                       * We then convert this list of nodes to a `NodesOnlyMesh`,
+                       * which doesn't do very much apart from keep track of the nodes.
+                       */
+
+
+                      // Create cells
+                      std::vector<CellPtr> cells;
+                      MAKE_PTR(WildTypeCellMutationState, p_state);
+                      MAKE_PTR(DifferentiatedCellProliferativeType, p_type);
+                      for (unsigned i=0; i<mesh.GetNumNodes(); i++)
+                      {
+                    	  UniformCellCycleModel* p_model = new UniformCellCycleModel();
+                    	  p_model->SetMinCellCycleDuration(100.0);
+                    	  p_model->SetMaxCellCycleDuration(1000.6);
+                          CellPtr p_cell(new Cell(p_state, p_model));
+                          p_cell->SetCellProliferativeType(p_type);
+
+
+
+                          double rand_angle = M_PI/2.0;
+                          MAKE_PTR(TypeSixMachineProperty, p_property);
+                          p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1, rand_angle));
+                          p_cell->AddCellProperty(p_property);
+
+                          //double birth_time = -RandomNumberGenerator::Instance()->ranf();
+                          p_cell->SetBirthTime(-0.9);
+                          mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+
+                          cells.push_back(p_cell);
+
+                      }
+
+                      // Create cell population
+                      NodeBasedCellPopulationWithCapsules<2> population(mesh, cells);
+
+                      population.AddCellWriter<CellIdWriter>();
+                      population.AddCellWriter<CapsuleOrientationWriter>();
+                      population.AddCellWriter<CapsuleScalingWriter>();
+
+                      boost::shared_ptr<AbstractCentreBasedDivisionRule<2,2> > p_division_rule(new CapsuleBasedDivisionRule<2,2>());
+                      population.SetCentreBasedDivisionRule(p_division_rule);
+
+                      population.Update();
+
+                      // Create simulation
+                      OffLatticeSimulation<2> simulator(population);
+                      simulator.SetOutputDirectory("TestSingleCapsuleWithMachinesKiller");
+                      double dt = 1.0/1200.0;
+                      simulator.SetDt(dt);
+                      simulator.SetSamplingTimestepMultiple(10);
+
+                      auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
+                      simulator.SetNumericalMethod(p_numerical_method);
+
+
+           //
+                      MAKE_PTR_ARGS(TypeSixMachineCellKiller<2>, p_killer, (&population));
+                      simulator.AddCellKiller(p_killer);
+                      /*
+                       * We now create a capsuleforce law and pass it to the simulation
+                       */
+                      //auto p_capsule_force = boost::make_shared<CapsuleForce<2>>();
+                      //p_capsule_force->SetYoungModulus(200.0);
+
+                      //simulator.AddForce(p_capsule_force);
+           //
+                      //auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
+                      //simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
+
+                      MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
+                      p_modifier->SetOutputDirectory("TestSingleCapsuleWithMachinesKiller");
+                      p_modifier->Setk_1(0.0);
+                      simulator.AddSimulationModifier(p_modifier);
+
+                      /* We then set an end time and run the simulation */
+                      simulator.SetEndTime(1.20527000050075); // was 1.0075
+                      TS_ASSERT_EQUALS(p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation()),4u);
+
+                      TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),4u);
+                      simulator.Solve();
+                      TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),2u);
+                  }
+
+
     void TestSingleCapsuleSimulationWithDivisionAndMachinesKiller() throw (Exception)
                {
            	    EXIT_IF_PARALLEL;
@@ -590,21 +724,22 @@ public:
                       MAKE_PTR_ARGS(TypeSixMachineCellKiller<2>, p_killer, (&population));
                       simulator.AddCellKiller(p_killer);
                       /*
-                       * We now create a force law and pass it to the simulation
-                       * We use linear springs between cells up to a maximum of 1.5 ('relaxed' cell diameters) apart, and add this to the simulation class.
+                       * We now create a capsuleforce law and pass it to the simulation
                        */
                       auto p_capsule_force = boost::make_shared<CapsuleForce<2>>();
+                      p_capsule_force->SetYoungModulus(200.0);
+
                       simulator.AddForce(p_capsule_force);
            //
-                      auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
-                      simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
+                      //auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
+                      //simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
 
                       MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
                       p_modifier->SetOutputDirectory("TestSingleCapsuleWithDivisionAndMachinesKiller");
                       simulator.AddSimulationModifier(p_modifier);
 
                       /* We then set an end time and run the simulation */
-                      simulator.SetEndTime(4.20527000050075); // was 1.0075
+                      simulator.SetEndTime(8.20527000050075); // was 1.0075
                       simulator.Solve();
                       PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
                   }
@@ -725,6 +860,7 @@ public:
             * We use linear springs between cells up to a maximum of 1.5 ('relaxed' cell diameters) apart, and add this to the simulation class.
             */
            auto p_capsule_force = boost::make_shared<CapsuleForce<2>>();
+           p_capsule_force->SetYoungModulus(200.0);
            simulator.AddForce(p_capsule_force);
 //
            auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);

@@ -10,6 +10,23 @@
 
 #include "Debug.hpp"
 
+
+
+template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::SetYoungModulus(double youngModulus)
+
+{
+	mYoungModulus=youngModulus;
+}
+
+template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+double CapsuleForce<ELEMENT_DIM, SPACE_DIM>::GetYoungModulus()
+
+{
+	return mYoungModulus;
+}
+
+
 template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CapsuleForce()
         : AbstractForce<ELEMENT_DIM, SPACE_DIM>(),

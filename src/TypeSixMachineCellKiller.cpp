@@ -7,6 +7,7 @@
 #include "TypeSixMachineProperty.hpp"
 #include "TypeSixSecretionEnumerations.hpp"
 #include "NodeBasedCellPopulation.hpp"
+#include "Debug.hpp"
 
 template<unsigned DIM>
 TypeSixMachineCellKiller<DIM>::TypeSixMachineCellKiller(AbstractCellPopulation<DIM>* pCellPopulation)
@@ -38,16 +39,18 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
+
+
 		// Create a new vector to store all pairs less any we might throw away
 		std::vector<std::pair<unsigned, double> > new_data;
-		new_data.reserve(r_data.size() + 1);
+		//new_data.reserve(r_data.size() + 1);
 
         // Iterate over machines in this cell
         for (auto& r_pair : r_data)
         {
             // If this machine is ready to kill a cell...
             unsigned state = r_pair.first;
-            if (state == 4)
+            if (state == 4u)
             {
                 // ...check if any neighbouring cells are close enough to kill...
                 unsigned node_index = p_population->GetLocationIndexUsingCell(*cell_iter);
@@ -61,10 +64,10 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                 
                 // We assume that the machine's angl
                 double theta_c = atan2(R, 0.5*L);
-                if (theta_c < 0)
-                {
-                    theta_c += 2*M_PI;
-                }
+                //if (theta_c < 0)
+                //{
+                //    theta_c += 2*M_PI;
+                //}
                 
                 double x_in_cell_frame = DOUBLE_UNSET;
                 double y_in_cell_frame = DOUBLE_UNSET;
@@ -80,7 +83,7 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                 }
                 else if ((theta > 2*M_PI - theta_c) || (theta < theta_c))
                 {
-                    x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
+                    x_in_cell_frame = (L+sqrt(pow(L,2)-(pow(L,2)-4*pow(R,2))*(1+pow(tan(theta),2))))/(2*(1+pow(tan(theta),2)));
                     y_in_cell_frame = x_in_cell_frame*tan(theta); 
                 }
                 else  
@@ -122,15 +125,18 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 				
 				    double distance_to_neighbour = boost::geometry::distance(machine_point, neighbour_axis);
                     
-                    if (distance_to_neighbour > R)
+                    if (distance_to_neighbour > R || p_population->GetCellUsingLocationIndex(*it)->HasApoptosisBegun())
                     {
-		                new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+		                //new_data.emplace_back(std::pair<unsigned, double>(r_pair));
 		            }
 		            else
-		            {      
+		            {
+		            	TRACE("StartingApoptosis");
                         // Kill this neighbouring cell
+		                r_pair.first=0u;
+
                         p_population->GetCellUsingLocationIndex(*it)->StartApoptosis();
-                        break;
+                        //break;
                         
 	                    // Note: In this case we don't store this machine's data in new_data,
 	                    // since the machine is assumed to be destroyed upon killing the 
@@ -140,8 +146,9 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
             }
             else
             {
-		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
 		    }
+            new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+
         }
 
 		r_data = new_data;

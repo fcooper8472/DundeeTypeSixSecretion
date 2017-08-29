@@ -55,8 +55,6 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 
 	  NodeBasedCellPopulation<SPACE_DIM>* p_node_population= dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
 
-	  double current_time=SimulationTime::Instance()->GetTime();
-	  PRINT_VARIABLE(current_time);
 
 	for (auto cell_iter = p_node_population->Begin();
 			   cell_iter != p_node_population->End();
@@ -73,11 +71,9 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 						  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
 
 						  double initial_length = 2.0;
-						  if (cell_age >= cell_cycle_time)
-						  {
-						 		cell_age=0.0;
-						  }
-
+						  //if (cell_age >= cell_cycle_time//{
+						 	//	cell_age=0.0;
+						  //\\}///
 
 					  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
 
@@ -89,9 +85,7 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 
 
 					  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
-							  std::cout<< "Ahh " << new_length << "\n";
 
-							  PRINT_VARIABLE(new_length);
 					      }
 
 				  }

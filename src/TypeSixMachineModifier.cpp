@@ -14,7 +14,7 @@
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
     : AbstractCellBasedSimulationModifier<DIM>(),
-      mOutputDirectory("")
+      mOutputDirectory(""),mk_1(0.1),mk_2(0.0),mk_3(10.1),mk_4(0.0),mk_5(10.1),mk_6(0.0),mk_7(10.1),mk_8(0.0)
 {
 }
 
@@ -87,7 +87,7 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
 
             double theta = (r_data[i]).second;
             
-            // We assume that the machine's angl
+            // compute angle that defines end of the axis and beginning of hemisphere
             double theta_c = atan2(R, 0.5*L);
             if (theta_c < 0)
             {
@@ -96,17 +96,17 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
             
             double x_in_cell_frame = DOUBLE_UNSET;
             double y_in_cell_frame = DOUBLE_UNSET;
-            if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c)
+            if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on upper body axis
             {
                 x_in_cell_frame = R/tan(theta);
                 y_in_cell_frame = R; 
             }
-            else if (fabs(theta - 1.5*M_PI) < 0.5*M_PI - theta_c)
+            else if (fabs(theta - 1.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on lower body axis
             {
                 x_in_cell_frame = R/tan(theta);
                 y_in_cell_frame = -R;
             }
-            else if ((theta > 2*M_PI - theta_c) || (theta < theta_c))
+            else if ((theta > 2*M_PI - theta_c) || (theta < theta_c)) // machine lies on right hemisphere
             {
                 x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
                 y_in_cell_frame = x_in_cell_frame*tan(theta); 
@@ -196,6 +196,44 @@ void TypeSixMachineModifier<DIM>::SetupSolve(AbstractCellPopulation<DIM,DIM>& rC
 }
 
 template<unsigned DIM>
+void TypeSixMachineModifier<DIM>::Setk_1(double k_1)
+{
+
+	mk_1= k_1;
+}
+template<unsigned DIM>
+unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
+{
+
+
+	unsigned totalNumberMachines=0u;
+    ///\todo Make sure the cell population is updated?
+    //rCellPopulation.Update();
+
+    // Iterate over cell population
+	//PRINT_VARIABLE(rCellPopulation.GetNumRealCells());
+    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+         cell_iter != rCellPopulation.End();
+         ++cell_iter)
+    {
+        // Get this cell's type six machine property data
+        CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+        if (collection.GetSize() != 1)
+        {
+            EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
+        }
+        boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
+        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+
+
+
+        totalNumberMachines+=r_data.size();
+
+    }
+    return totalNumberMachines;
+}
+
+template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
 
@@ -204,7 +242,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
     //rCellPopulation.Update();
 
     // Iterate over cell population
-    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+	for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
          cell_iter != rCellPopulation.End();
          ++cell_iter)
     { 
@@ -217,22 +255,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
-        ///\todo change parameters to be member variables
-        double k_1 = 0.01;
-        double k_2 = 0.5;
-        double k_3 = 1.0;
-        double k_4 = 1.0;
-        double k_5 = 1.0;
-        double k_6 = 1.0;
-        double k_7 = 1.0;
-        double k_8 = 0.0;
 
 	    double dt = SimulationTime::Instance()->GetTimeStep();
-        assert((k_1 + k_2 + k_3 + k_4 + k_5 + k_6 + k_7 + k_8)*dt <= 1.0);
+        assert((mk_1 + mk_2 + mk_3 + mk_4 + mk_5 + mk_6 + mk_7 + mk_8)*dt <= 1.0);
 
 		// Create a new vector to store all pairs less any we might throw away
 		std::vector<std::pair<unsigned, double> > new_data;
-		new_data.reserve(r_data.size() + 1);
+		//new_data.reserve(r_data.size() + 1);
 
         for (auto& r_pair : r_data)
         {
@@ -243,39 +272,39 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		    switch (old_state)
 		    {
 		        case 1:
-		            if (r < k_2*dt)
+		            if (r < mk_2*dt)
 		            {
 		                new_state = 0;
 		            }
-		            else if (r < (k_2 + k_3)*dt)
+		            else if (r < (mk_2 + mk_3)*dt)
 		            {
 		                new_state = 2;
 		            }
 		            break;
 		        case 2:
-		            if (r < k_4*dt)
+		            if (r < mk_4*dt)
 		            {
 		                new_state = 1;
 		            }
-		            else if (r < (k_4 + k_5)*dt)
+		            else if (r < (mk_4 + mk_5)*dt)
 		            {
 		                new_state = 3;
 		            }
 		            break;
 		        case 3:
-		            if (r < k_6*dt)
+		            if (r < mk_6*dt)
 		            {
 		                new_state = 2;
 		            }
-		            else if (r < (k_6 + k_7)*dt)
+		            else if (r < (mk_6 + mk_7)*dt)
 		            {
 		                new_state = 4;
 		            }
 		            break;
 		        case 4:
-		            if (r < k_8*dt)
+		            if (r < mk_8*dt)
 		            {
-		                new_state = 8;
+		                new_state = 3;
 		            }
 		            break;
 		    }
@@ -285,16 +314,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 				r_pair.first = new_state;
 			}
 
-		    if (new_state != 0)
-		    {
-		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
-		    }
-		}
+		    new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+        }
 		
 		// Create a machine?
 	    double r = RandomNumberGenerator::Instance()->ranf();
 	
-        if (r < k_1*dt)
+        if (r < mk_1*dt)
         {
             double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
 
@@ -303,6 +329,44 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
 		r_data = new_data;
     }
+
+
+    // Remove machines in State 0
+
+    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+             cell_iter != rCellPopulation.End();
+             ++cell_iter)
+        {
+            // Get this cell's type six machine property data
+            CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+            if (collection.GetSize() != 1)
+            {
+                EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
+            }
+            boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
+            std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+
+
+
+    		// Create a new vector to store all pairs less any we might throw away
+    		std::vector<std::pair<unsigned, double> > new_data;
+    		//new_data.reserve(r_data.size() + 1);
+
+            for (auto& r_pair : r_data)
+            {
+    	        unsigned old_state = r_pair.first;
+
+    	        if (old_state>0) // discard any machines in state 0
+    	        {
+    		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+    	        }
+
+            }
+    		r_data = new_data;
+
+        }
+
+
 
 
 }

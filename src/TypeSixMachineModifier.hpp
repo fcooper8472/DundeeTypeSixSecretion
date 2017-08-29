@@ -90,6 +90,14 @@ public:
      * @param rParamsFile the file stream to which the parameters are output
      */
     void OutputSimulationModifierParameters(out_stream& rParamsFile);
+
+    double mk_1, mk_2, mk_3,mk_4,mk_5,mk_6,mk_7,mk_8;
+
+
+    void Setk_1(double k_1);
+
+    unsigned GetTotalNumberOfMachines(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
+
 };
 
 #include "SerializationExportWrapper.hpp"

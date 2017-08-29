@@ -106,6 +106,10 @@ public:
      * @param rParamsFile the file stream to which the parameters are output
      */
     virtual void OutputForceParameters(out_stream& rParamsFile);
+
+    void SetYoungModulus(double youngModulus);
+    double GetYoungModulus();
+
 };
 
 #include "SerializationExportWrapper.hpp"
