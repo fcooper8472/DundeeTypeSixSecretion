@@ -260,13 +260,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         assert((mk_1 + mk_2 + mk_3 + mk_4 + mk_5 + mk_6 + mk_7 + mk_8)*dt <= 1.0);
 
 		// Create a new vector to store all pairs less any we might throw away
-		std::vector<std::pair<unsigned, double> > new_data;
+		//std::vector<std::pair<unsigned, double> > new_data;
 		//new_data.reserve(r_data.size() + 1);
 
         for (auto& r_pair : r_data)
         {
 	        unsigned old_state = r_pair.first;
-	        unsigned new_state = UNSIGNED_UNSET;
+	        unsigned new_state = old_state;
 		    double r = RandomNumberGenerator::Instance()->ranf();
 		
 		    switch (old_state)
@@ -309,12 +309,12 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		            break;
 		    }
 
-		    if (new_state != UNSIGNED_UNSET && new_state > 0)
-			{
+		    //if (new_state != UNSIGNED_UNSET && new_state > 0u)
+			//{
 				r_pair.first = new_state;
-			}
+			//}
 
-		    new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+		    //new_data.emplace_back(std::pair<unsigned, double>(r_pair));
         }
 		
 		// Create a machine?
@@ -324,10 +324,10 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         {
             double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
 
-        	new_data.emplace_back(std::pair<unsigned, double>(1, theta));
+            r_data.emplace_back(std::pair<unsigned, double>(1, theta));
         }
 
-		r_data = new_data;
+		//r_data = new_data;
     }
 
 
@@ -356,7 +356,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
             {
     	        unsigned old_state = r_pair.first;
 
-    	        if (old_state>0) // discard any machines in state 0
+    	        if (old_state>0u) // discard any machines in state 0
     	        {
     		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
     	        }
