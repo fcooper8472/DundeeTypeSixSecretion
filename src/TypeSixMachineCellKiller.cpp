@@ -56,6 +56,9 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                 unsigned node_index = p_population->GetLocationIndexUsingCell(*cell_iter);
                 Node<DIM>* p_node = p_population->GetNode(node_index);
                 auto cell_centre = p_node->rGetLocation();
+
+
+
                 double cell_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
                 double L = p_node->rGetNodeAttributes()[NA_LENGTH];
                 double R = p_node->rGetNodeAttributes()[NA_RADIUS];

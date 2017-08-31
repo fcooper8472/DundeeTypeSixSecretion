@@ -237,6 +237,7 @@ template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
 
+	//PRINT_VARIABLE(GetTotalNumberOfMachines(rCellPopulation));
 
     ///\todo Make sure the cell population is updated?
     //rCellPopulation.Update();
@@ -271,40 +272,40 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		
 		    switch (old_state)
 		    {
-		        case 1:
+		        case 1u:
 		            if (r < mk_2*dt)
 		            {
-		                new_state = 0;
+		                new_state = 0u;
 		            }
 		            else if (r < (mk_2 + mk_3)*dt)
 		            {
-		                new_state = 2;
+		                new_state = 2u;
 		            }
 		            break;
-		        case 2:
+		        case 2u:
 		            if (r < mk_4*dt)
 		            {
-		                new_state = 1;
+		                new_state = 1u;
 		            }
 		            else if (r < (mk_4 + mk_5)*dt)
 		            {
-		                new_state = 3;
+		                new_state = 3u;
 		            }
 		            break;
-		        case 3:
+		        case 3u:
 		            if (r < mk_6*dt)
 		            {
-		                new_state = 2;
+		                new_state = 2u;
 		            }
 		            else if (r < (mk_6 + mk_7)*dt)
 		            {
-		                new_state = 4;
+		                new_state = 4u;
 		            }
 		            break;
-		        case 4:
+		        case 4u:
 		            if (r < mk_8*dt)
 		            {
-		                new_state = 3;
+		                new_state = 3u;
 		            }
 		            break;
 		    }
@@ -354,9 +355,9 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
             for (auto& r_pair : r_data)
             {
-    	        unsigned old_state = r_pair.first;
+    	        unsigned current_state = r_pair.first;
 
-    	        if (old_state>0u) // discard any machines in state 0
+    	        if (current_state!=0u) // discard any machines in state 0
     	        {
     		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
     	        }
