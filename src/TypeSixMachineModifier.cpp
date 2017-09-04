@@ -10,12 +10,46 @@
 #include "UniformCellCycleModel.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "Debug.hpp"
+#include "NodeBasedCellPopulationWithCapsules.hpp"
+
 
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
     : AbstractCellBasedSimulationModifier<DIM>(),
-      mOutputDirectory(""),mk_1(0.1),mk_2(0.0),mk_3(10.1),mk_4(0.0),mk_5(10.1),mk_6(0.0),mk_7(10.1),mk_8(0.0)
+      mOutputDirectory(""),mk_1(0.4),mk_2(0.0),mk_3(1.1),mk_4(0.0),mk_5(1.1),mk_6(0.0),mk_7(1.1),mStateFire(3u)
 {
+}
+
+template<unsigned DIM>
+void TypeSixMachineModifier<DIM>::SetMachineParametersFromGercEtAl()
+{
+	// Gerc et al, Cell Reports Gerc et al., 2015, Cell Reports 	12 	, 2131–2142	 2015
+	// http://dx.doi.org/10.1016/j.celrep.2015.08.05
+
+	mk_7=1/30.0;
+    mk_4=0.69/2.0-mk_7;
+
+	mk_1= 4.4;
+	mk_2=0.05;
+    mk_3=(0.6/6.0);
+    mk_6=1.0;
+    mk_5=mk_6+mk_7;
+
+    mk_2=mk_2*60.0;
+    mk_3=mk_3*60.0;
+    mk_4=mk_4*60.0;
+    mk_5=mk_5*60.0;
+    mk_6=mk_6*60.0;
+    mk_7=mk_7*60.0;
+}
+
+template<unsigned DIM>
+void TypeSixMachineModifier<DIM>::SetContactDependentFiring()
+{
+	// Gerc et al, Cell Reports Gerc et al., 2015, Cell Reports 	12 	, 2131–2142	 2015
+	// http://dx.doi.org/10.1016/j.celrep.2015.08.05
+
+	mk_7=0.0;
 }
 
 template<unsigned DIM>
@@ -70,58 +104,26 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
         
+
+
+        NodeBasedCellPopulationWithCapsules<DIM>& rcapsule_pop=(dynamic_cast<NodeBasedCellPopulationWithCapsules<DIM>&>(rCellPopulation));
+		Node<DIM>* p_node = rcapsule_pop.GetNodeCorrespondingToCell(*cell_iter);
+
+
+		double L = p_node->rGetNodeAttributes()[NA_LENGTH];
+        c_vector<double, DIM> cell_centre = p_node->rGetLocation();
+        unsigned node_index = rCellPopulation.GetLocationIndexUsingCell(*cell_iter);
+
+
         // Populate the vector of VTK data
-        for (unsigned i=0; i<r_data.size(); i++)
+        for (auto& r_pair : r_data)
         {
             // Populate data for VTK
-            vtk_machine_data.emplace_back((r_data[i]).first);
+            vtk_machine_data.emplace_back(r_pair.first);
             
             // Store the location of this machine
-            unsigned node_index = rCellPopulation.GetLocationIndexUsingCell(*cell_iter);
-            Node<DIM>* p_node = rCellPopulation.GetNode(node_index);
-            c_vector<double, DIM> cell_centre;
-            cell_centre = p_node->rGetLocation();
-            double cell_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
-            double L = p_node->rGetNodeAttributes()[NA_LENGTH];
-            double R = p_node->rGetNodeAttributes()[NA_RADIUS];
+            c_vector<double, DIM> machine_coords=rcapsule_pop.GetMachineCoords(node_index,r_pair.second,cell_centre,L);
 
-            double theta = (r_data[i]).second;
-            
-            // compute angle that defines end of the axis and beginning of hemisphere
-            double theta_c = atan2(R, 0.5*L);
-            if (theta_c < 0)
-            {
-                theta_c += 2*M_PI;
-            }
-            
-            double x_in_cell_frame = DOUBLE_UNSET;
-            double y_in_cell_frame = DOUBLE_UNSET;
-            if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on upper body axis
-            {
-                x_in_cell_frame = R/tan(theta);
-                y_in_cell_frame = R; 
-            }
-            else if (fabs(theta - 1.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on lower body axis
-            {
-                x_in_cell_frame = R/tan(theta);
-                y_in_cell_frame = -R;
-            }
-            else if ((theta > 2*M_PI - theta_c) || (theta < theta_c)) // machine lies on right hemisphere
-            {
-                x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-                y_in_cell_frame = x_in_cell_frame*tan(theta); 
-            }
-            else  
-            {
-            	x_in_cell_frame = (-L-sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-                y_in_cell_frame = x_in_cell_frame*tan(theta); 
-            }
-
-            // Compute and store the coordinates of this machine            
-            c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
-            machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
-            machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
-            
             machine_nodes.push_back(new Node<DIM>(machine_index, machine_coords, false));
             machine_index++;
         }
@@ -152,6 +154,7 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
     }
 #endif //CHASTE_VTK
 }
+
 
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateAtEndOfOutputTimeStep(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
@@ -237,12 +240,12 @@ template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
 
-	//PRINT_VARIABLE(GetTotalNumberOfMachines(rCellPopulation));
 
     ///\todo Make sure the cell population is updated?
     //rCellPopulation.Update();
+    double dt = SimulationTime::Instance()->GetTimeStep();
 
-    // Iterate over cell population
+    // Iterate over cell population and update machines
 	for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
          cell_iter != rCellPopulation.End();
          ++cell_iter)
@@ -257,12 +260,9 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
 
-	    double dt = SimulationTime::Instance()->GetTimeStep();
-        assert((mk_1 + mk_2 + mk_3 + mk_4 + mk_5 + mk_6 + mk_7 + mk_8)*dt <= 1.0);
+        assert((mk_1 + mk_2 + mk_3 + mk_4 + mk_5 + mk_6 + mk_7 )*dt <= 1.0);
 
-		// Create a new vector to store all pairs less any we might throw away
-		//std::vector<std::pair<unsigned, double> > new_data;
-		//new_data.reserve(r_data.size() + 1);
+		// update existing machines
 
         for (auto& r_pair : r_data)
         {
@@ -297,44 +297,53 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		            {
 		                new_state = 2u;
 		            }
-		            else if (r < (mk_6 + mk_7)*dt)
+		            else if (r < (mk_6 + mk_7)*dt) // Aggressive type VI fires without any neighbour contact
 		            {
-		                new_state = 4u;
+		                new_state = 0u;
 		            }
 		            break;
-		        case 4u:
-		            if (r < mk_8*dt)
-		            {
-		                new_state = 3u;
-		            }
-		            break;
+//		        case 4u:
+//		            if (r < mk_8*dt)
+//		            {
+//		                new_state = 3u;
+//		            }
+//		            break;
 		    }
-
-		    //if (new_state != UNSIGNED_UNSET && new_state > 0u)
-			//{
-				r_pair.first = new_state;
-			//}
-
-		    //new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+		    r_pair.first = new_state;
         }
-		
-		// Create a machine?
-	    double r = RandomNumberGenerator::Instance()->ranf();
-	
-        if (r < mk_1*dt)
-        {
-            double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
-
-            r_data.emplace_back(std::pair<unsigned, double>(1, theta));
-        }
-
-		//r_data = new_data;
     }
+		
+
+        // Iterate over cell population and create new machines randomly
+        for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+                 cell_iter != rCellPopulation.End();
+                 ++cell_iter)
+		{
+			// Get this cell's type six machine property data
+			CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+			if (collection.GetSize() != 1)
+			{
+				EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
+			}
+			boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
+			std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
 
-    // Remove machines in State 0
+			// Create a machine?
+			double r = RandomNumberGenerator::Instance()->ranf();
 
-    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
+			if (r < mk_1*dt)
+			{
+				double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
+
+				r_data.emplace_back(std::pair<unsigned, double>(1u, theta));
+			}
+
+		}
+
+
+    // Iterate over cells and remove machines in State 0
+        for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
              cell_iter != rCellPopulation.End();
              ++cell_iter)
         {
@@ -348,8 +357,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
             std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
 
 
-
-    		// Create a new vector to store all pairs less any we might throw away
+            // Create a new vector to store all pairs less any we might throw away
     		std::vector<std::pair<unsigned, double> > new_data;
     		//new_data.reserve(r_data.size() + 1);
 
@@ -364,11 +372,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
             }
     		r_data = new_data;
-
         }
-
-
-
 
 }
 

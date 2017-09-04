@@ -9,6 +9,8 @@
 #include "NodeBasedCellPopulation.hpp"
 #include "Debug.hpp"
 
+#include "NodeBasedCellPopulationWithCapsules.hpp"
+
 template<unsigned DIM>
 TypeSixMachineCellKiller<DIM>::TypeSixMachineCellKiller(AbstractCellPopulation<DIM>* pCellPopulation)
     : AbstractCellKiller<DIM>(pCellPopulation)
@@ -26,8 +28,8 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
     using geom_segment = boost::geometry::model::segment<geom_point>;
 
     // Iterate over cells
-    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->mpCellPopulation->Begin();
-         cell_iter != this->mpCellPopulation->End();
+    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = p_population->Begin();
+         cell_iter != p_population->End();
          ++cell_iter)
     {
         // Get this cell's type six machine property data
@@ -50,56 +52,24 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
         {
             // If this machine is ready to kill a cell...
             unsigned state = r_pair.first;
-            if (state == 4u)
+            if (state == 3u)
             {
                 // ...check if any neighbouring cells are close enough to kill...
                 unsigned node_index = p_population->GetLocationIndexUsingCell(*cell_iter);
-                Node<DIM>* p_node = p_population->GetNode(node_index);
-                auto cell_centre = p_node->rGetLocation();
+
+                c_vector<double, DIM> cell_centre = p_population->GetNodeCorrespondingToCell(*cell_iter)->rGetLocation();
+
+
+	            NodeBasedCellPopulationWithCapsules<DIM>* p_capsule_pop=(dynamic_cast<NodeBasedCellPopulationWithCapsules<DIM>*>(p_population));
+
+	            Node<DIM>* p_node = p_capsule_pop->GetNodeCorrespondingToCell(*cell_iter);
+	           	double L = p_node->rGetNodeAttributes()[NA_LENGTH];
+
+	            c_vector<double, DIM> machine_coords=p_capsule_pop->GetMachineCoords(node_index,r_pair.second,cell_centre,L);
 
 
 
-                double cell_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
-                double L = p_node->rGetNodeAttributes()[NA_LENGTH];
-                double R = p_node->rGetNodeAttributes()[NA_RADIUS];
 
-                double theta = r_pair.second;
-                
-                // We assume that the machine's angl
-                double theta_c = atan2(R, 0.5*L);
-                //if (theta_c < 0)
-                //{
-                //    theta_c += 2*M_PI;
-                //}
-                
-                double x_in_cell_frame = DOUBLE_UNSET;
-                double y_in_cell_frame = DOUBLE_UNSET;
-                if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c)
-                {
-                    x_in_cell_frame = R/tan(theta);
-                    y_in_cell_frame = R; 
-                }
-                else if (fabs(theta - 1.5*M_PI) < 0.5*M_PI - theta_c)
-                {
-                    x_in_cell_frame = R/tan(theta);
-                    y_in_cell_frame = -R;
-                }
-                else if ((theta > 2*M_PI - theta_c) || (theta < theta_c))
-                {
-                    x_in_cell_frame = (L+sqrt(pow(L,2)-(pow(L,2)-4*pow(R,2))*(1+pow(tan(theta),2))))/(2*(1+pow(tan(theta),2)));
-                    y_in_cell_frame = x_in_cell_frame*tan(theta); 
-                }
-                else  
-                {
-                	x_in_cell_frame = (-L-sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-                    y_in_cell_frame = x_in_cell_frame*tan(theta); 
-                }
-
-	            // Compute and store the coordinates of this machine            
-	            c_vector<double, DIM> machine_coords;
-	            machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
-	            machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
-                
                 // Store the node indices corresponding to neighbouring cells
                 double neighbourhood_radius = 3.0*L;
                 std::set<unsigned> neighbours = p_population->GetNodesWithinNeighbourhoodRadius(node_index, neighbourhood_radius);
@@ -115,6 +85,9 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                     auto neighbour_location = p_neighbour->rGetLocation();
 				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_ANGLE];
 				    const double neighbour_length = p_neighbour->rGetNodeAttributes()[NA_LENGTH];
+
+		            double R = p_neighbour->rGetNodeAttributes()[NA_RADIUS];
+
 				
 				    geom_point machine_point(machine_coords[0], machine_coords[1]);
 								

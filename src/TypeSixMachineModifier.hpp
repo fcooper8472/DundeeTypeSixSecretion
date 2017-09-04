@@ -91,10 +91,15 @@ public:
      */
     void OutputSimulationModifierParameters(out_stream& rParamsFile);
 
-    double mk_1, mk_2, mk_3,mk_4,mk_5,mk_6,mk_7,mk_8;
+    double mk_1, mk_2, mk_3,mk_4,mk_5,mk_6,mk_7;
+    unsigned mStateFire;
 
 
     void Setk_1(double k_1);
+    void SetMachineParametersFromGercEtAl();
+    void SetContactDependentFiring();
+
+
 
     unsigned GetTotalNumberOfMachines(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
 

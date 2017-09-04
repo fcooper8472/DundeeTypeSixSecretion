@@ -12,7 +12,6 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
         case 1:
         {
             EXCEPTION("CapsuleBasedDivisionRule is not implemented for SPACE_DIM==1");
-
         }
         case 2:
         {
@@ -38,8 +37,6 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
     c_vector<double, SPACE_DIM> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - axis_vector;
     c_vector<double, SPACE_DIM> daughter_position = parent_position + 2.0*axis_vector;
 
-
-    c_vector<double, SPACE_DIM> old_parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) ;
 
 
     std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > positions(parent_position, daughter_position);

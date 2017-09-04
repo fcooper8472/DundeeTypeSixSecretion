@@ -323,7 +323,7 @@ public:
           }
 
 
-    void TestMachineUpdateAtDivision() throw (Exception)
+   void TestMachineUpdateAtDivision() throw (Exception)
    {
 	EXIT_IF_PARALLEL;
 
@@ -332,9 +332,7 @@ public:
 
 		  // Create some capsules
 		  std::vector<Node<2>*> nodes;
-
 		  nodes.push_back(new Node<2>(0u, Create_c_vector(5.0, 5.0)));
-
 
 		  /*
 		   * We then convert this list of nodes to a `NodesOnlyMesh`,
@@ -354,9 +352,6 @@ public:
 		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
 		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
 		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
-
-
-
 		  // Create cells
 		  std::vector<CellPtr> cells;
 		  MAKE_PTR(WildTypeCellMutationState, p_state);
@@ -365,11 +360,9 @@ public:
 		  {
 			  UniformCellCycleModel* p_model = new UniformCellCycleModel();
 			  p_model->SetMinCellCycleDuration(1.0);
-			  p_model->SetMaxCellCycleDuration(1.6);
+			  p_model->SetMaxCellCycleDuration(1.01);
 			  CellPtr p_cell(new Cell(p_state, p_model));
 			  p_cell->SetCellProliferativeType(p_type);
-
-
 
 			  double angle_1 = 0;
 			  double angle_2 = M_PI;
@@ -380,7 +373,6 @@ public:
 
 
 			  p_cell->AddCellProperty(p_property);
-
 			  p_cell->SetBirthTime(-0.9);
 			  mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
 
@@ -434,6 +426,125 @@ public:
 		  PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
 	  }
 
+
+   void TestMachineUpdateAfterDivision() throw (Exception)
+   {
+	EXIT_IF_PARALLEL;
+
+		  //const unsigned num_nodes = 1u;
+		  //auto p_rand_gen = RandomNumberGenerator::Instance();
+
+		  // Create some capsules
+		  std::vector<Node<2>*> nodes;
+
+		  nodes.push_back(new Node<2>(0u, Create_c_vector(5.0, 5.0)));
+
+
+		  /*
+		   * We then convert this list of nodes to a `NodesOnlyMesh`,
+		   * which doesn't do very much apart from keep track of the nodes.
+		   */
+		  NodesOnlyMesh<2> mesh;
+		  mesh.ConstructNodesWithoutMesh(nodes, 100.0);
+		  c_vector<double, 4> domain_size;
+		  domain_size[0] = -1000.0;
+		  domain_size[1] = 1000.0;
+		  domain_size[2] = -1000.0;
+		  domain_size[3] = 1000.0;
+		  mesh.SetInitialBoxCollection(domain_size, 10.0);
+
+		  mesh.GetNode(0u)->AddNodeAttribute(0.0);
+		  mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
+		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+		  mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+		  // Create cells
+		  std::vector<CellPtr> cells;
+		  MAKE_PTR(WildTypeCellMutationState, p_state);
+		  MAKE_PTR(TransitCellProliferativeType, p_type);
+		  for (unsigned i=0; i<mesh.GetNumNodes(); i++)
+		  {
+			  UniformCellCycleModel* p_model = new UniformCellCycleModel();
+			  p_model->SetMinCellCycleDuration(1.0);
+			  p_model->SetMaxCellCycleDuration(1.01);
+			  CellPtr p_cell(new Cell(p_state, p_model));
+			  p_cell->SetCellProliferativeType(p_type);
+
+			  double angle_1 = M_PI/4.0;
+			  double angle_2 = -3.0*M_PI/4.0;
+
+			  MAKE_PTR(TypeSixMachineProperty, p_property);
+			  p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_1));
+			  p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_2));
+
+
+			  p_cell->AddCellProperty(p_property);
+
+			  p_cell->SetBirthTime(-0.9);
+			  mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
+
+			  cells.push_back(p_cell);
+		  }
+
+		  // Create cell population
+		  NodeBasedCellPopulationWithCapsules<2> population(mesh, cells);
+
+		  population.AddCellWriter<CellIdWriter>();
+		  population.AddCellWriter<CapsuleOrientationWriter>();
+		  population.AddCellWriter<CapsuleScalingWriter>();
+
+		  boost::shared_ptr<AbstractCentreBasedDivisionRule<2,2> > p_division_rule(new CapsuleBasedDivisionRule<2,2>());
+		  population.SetCentreBasedDivisionRule(p_division_rule);
+
+		  // Create simulation
+		  OffLatticeSimulation<2> simulator(population);
+		  simulator.SetOutputDirectory("TestMachinePositionAfterDivision");
+		  double dt = 1.0/1200.0;
+		  simulator.SetDt(dt);
+		  simulator.SetSamplingTimestepMultiple(10);
+
+		  auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
+		  simulator.SetNumericalMethod(p_numerical_method);
+
+
+		  auto p_capsule_force = boost::make_shared<CapsuleForce<2>>();
+		  simulator.AddForce(p_capsule_force);
+//
+
+		  MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
+		  p_modifier->SetOutputDirectory("TestMachinePositionAfterDivision");
+		  p_modifier->Setk_1(0.0);
+		  simulator.AddSimulationModifier(p_modifier);
+
+
+		  unsigned num_machines=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+
+		  TS_ASSERT_EQUALS(num_machines,2u);
+
+		  /* We then set an end time and run the simulation */
+		  //simulator.SetEndTime(0.067000050075); // was 1.0075
+
+		 // simulator.Solve(); // was 1.0075
+
+		  // test  location of machine
+		  //std::vector<std::pair<unsigned, double> >& r_parent_data = p_property->rGetMachineData();
+
+		  //Node<DIM>* p_daughter_node = population->GetNode(0);
+		  //auto daughter_cell_centre = p_daughter_node->rGetLocation();
+
+		  //GetMachineCoords(0,r_parent_data[0],c_vector<double,DIM> daughter_cell_centre,double L)
+		  simulator.SetEndTime(2.67000050075); // was 1.0075
+		  simulator.Solve();
+
+		  // test location of machine after division
+
+		  unsigned num_machines2=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+
+		  TS_ASSERT_EQUALS(num_machines2,2u);
+
+		  PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
+	  }
+
     void TestSingleCapsuleSimulationWithDivisionAndMachines() throw (Exception)
            {
        	    	EXIT_IF_PARALLEL;
@@ -478,9 +589,9 @@ public:
 
 
 
-                      double rand_angle = 2*3.147*RandomNumberGenerator::Instance()->ranf();
+                      double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
                       MAKE_PTR(TypeSixMachineProperty, p_property);
-                      p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(i%4, rand_angle));
+                      p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4u, rand_angle));
        				 	p_cell->AddCellProperty(p_property);
 
                       //double birth_time = -RandomNumberGenerator::Instance()->ranf();
@@ -746,9 +857,9 @@ public:
 
 
 
-                          double rand_angle = 2*3.147*RandomNumberGenerator::Instance()->ranf();
+                          double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
                           MAKE_PTR(TypeSixMachineProperty, p_property);
-           				 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(i%4, rand_angle));
+           				 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1u, rand_angle));
            				 p_cell->AddCellProperty(p_property);
 
                           //double birth_time = -RandomNumberGenerator::Instance()->ranf();
@@ -792,18 +903,131 @@ public:
 
                       simulator.AddForce(p_capsule_force);
            //
-                      //auto p_boundary_condition = boost::make_shared<SquareBoundaryCondition>(&population);
-                      //simulator.AddCellPopulationBoundaryCondition(p_boundary_condition);
 
                       MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
                       p_modifier->SetOutputDirectory("TestSingleCapsuleWithDivisionAndMachinesKiller");
+                      p_modifier->SetMachineParametersFromGercEtAl();
+                      p_modifier->SetContactDependentFiring();
                       simulator.AddSimulationModifier(p_modifier);
+
 
                       /* We then set an end time and run the simulation */
                       simulator.SetEndTime(8.20527000050075); // was 1.0075
                       simulator.Solve();
                       PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
                   }
+
+    void TestSingleCapsuleSimulationWithDivisionAndMachinesKillerGerc() throw (Exception)
+                  {
+              	    EXIT_IF_PARALLEL;
+
+                         //auto p_rand_gen = RandomNumberGenerator::Instance();
+
+                         // Create some capsules
+                         std::vector<Node<2>*> nodes;
+
+                         nodes.push_back(new Node<2>(0u, Create_c_vector(5.0, 5.0)));
+
+                         /*
+                          * We then convert this list of nodes to a `NodesOnlyMesh`,
+                          * which doesn't do very much apart from keep track of the nodes.
+                          */
+                         NodesOnlyMesh<2> mesh;
+                         mesh.ConstructNodesWithoutMesh(nodes, 100.0);
+                         c_vector<double, 4> domain_size;
+                         domain_size[0] = -1000.0;
+                         domain_size[1] = 1000.0;
+                         domain_size[2] = -1000.0;
+                         domain_size[3] = 1000.0;
+                         mesh.SetInitialBoxCollection(domain_size, 10.0);
+
+                         mesh.GetNode(0u)->AddNodeAttribute(0.0);
+                         mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+                         mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
+                         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+                         mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+                         for (unsigned node_idx = 1; node_idx < mesh.GetNumNodes(); ++node_idx)
+                         {
+                             mesh.GetNode(node_idx)->AddNodeAttribute(0.0);
+                             mesh.GetNode(node_idx)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+                             mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_ANGLE] = 0.0;
+                             mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+                             mesh.GetNode(node_idx)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+                         }
+
+                         // Create cells
+                         std::vector<CellPtr> cells;
+                         MAKE_PTR(WildTypeCellMutationState, p_state);
+                         MAKE_PTR(TransitCellProliferativeType, p_type);
+                         for (unsigned i=0; i<mesh.GetNumNodes(); i++)
+                         {
+                      	   UniformCellCycleModel* p_model = new UniformCellCycleModel();
+                      	   p_model->SetMinCellCycleDuration(1.0);
+                      	   p_model->SetMaxCellCycleDuration(1.6);
+                             CellPtr p_cell(new Cell(p_state, p_model));
+                             p_cell->SetCellProliferativeType(p_type);
+
+
+
+                             double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
+                             MAKE_PTR(TypeSixMachineProperty, p_property);
+              				 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1u, rand_angle));
+              				 p_cell->AddCellProperty(p_property);
+
+                             //double birth_time = -RandomNumberGenerator::Instance()->ranf();
+                             p_cell->SetBirthTime(-0.9);
+                             mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
+
+                             cells.push_back(p_cell);
+
+
+                         }
+
+                         // Create cell population
+                         NodeBasedCellPopulationWithCapsules<2> population(mesh, cells);
+
+                         population.AddCellWriter<CellIdWriter>();
+                         population.AddCellWriter<CapsuleOrientationWriter>();
+                         population.AddCellWriter<CapsuleScalingWriter>();
+
+                         boost::shared_ptr<AbstractCentreBasedDivisionRule<2,2> > p_division_rule(new CapsuleBasedDivisionRule<2,2>());
+                         population.SetCentreBasedDivisionRule(p_division_rule);
+
+                         // Create simulation
+                         OffLatticeSimulation<2> simulator(population);
+                         simulator.SetOutputDirectory("TestSingleCapsuleWithDivisionAndMachinesKillerGerc");
+                         double dt = 1.0/1200.0;
+                         simulator.SetDt(dt);
+                         simulator.SetSamplingTimestepMultiple(10);
+
+                         auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
+                         simulator.SetNumericalMethod(p_numerical_method);
+
+
+              //
+                         MAKE_PTR_ARGS(TypeSixMachineCellKiller<2>, p_killer, (&population));
+                         simulator.AddCellKiller(p_killer);
+                         /*
+                          * We now create a capsuleforce law and pass it to the simulation
+                          */
+                         auto p_capsule_force = boost::make_shared<CapsuleForce<2>>();
+                         p_capsule_force->SetYoungModulus(200.0);
+
+                         simulator.AddForce(p_capsule_force);
+              //
+
+                         MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
+                         p_modifier->SetOutputDirectory("TestSingleCapsuleWithDivisionAndMachinesKillerGerc");
+                         p_modifier->SetMachineParametersFromGercEtAl();
+                         simulator.AddSimulationModifier(p_modifier);
+
+
+                         /* We then set an end time and run the simulation */
+                         simulator.SetEndTime(8.20527000050075); // was 1.0075
+                         simulator.Solve();
+                         PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
+                     }
 
 
     void NoTestLongerCapsuleSimulationWithDivisionAndMachine() throw (Exception)
@@ -880,7 +1104,7 @@ public:
                p_cell->SetCellProliferativeType(p_type);
 
                MAKE_PTR(TypeSixMachineProperty, p_property);
-				p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(i%4, 0.0));
+				p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1, 0.0));
 					p_cell->AddCellProperty(p_property);
 
 //               double birth_time = -RandomNumberGenerator::Instance()->ranf();

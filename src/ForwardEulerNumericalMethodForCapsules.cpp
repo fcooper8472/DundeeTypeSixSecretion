@@ -71,9 +71,7 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 						  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
 
 						  double initial_length = 2.0;
-						  //if (cell_age >= cell_cycle_time//{
-						 	//	cell_age=0.0;
-						  //\\}///
+
 
 					  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
 

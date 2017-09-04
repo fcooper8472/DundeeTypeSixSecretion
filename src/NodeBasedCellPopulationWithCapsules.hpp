@@ -102,6 +102,9 @@ public:
 
      CellPtr AddCell(CellPtr pNewCell, CellPtr pParentCell=CellPtr());
 
+     c_vector<double, DIM> GetMachineCoords(unsigned node_index,double theta,c_vector<double,DIM> cell_centre,double L);
+
+
 
     /**
      * Outputs CellPopulation parameters to file
