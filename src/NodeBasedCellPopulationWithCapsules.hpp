@@ -104,6 +104,8 @@ public:
 
      c_vector<double, DIM> GetMachineCoords(unsigned node_index,double theta,c_vector<double,DIM> cell_centre,double L);
 
+     std::vector<unsigned> GetMachineData(CellPtr pCell);
+
 
 
     /**

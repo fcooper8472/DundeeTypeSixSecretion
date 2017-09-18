@@ -149,6 +149,8 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 
 	MAKE_PTR(TypeSixMachineProperty, p_property);
+	p_property->SetNumMachineFiresInThisTimeStep(0u);
+
 	pNewCell->AddCellProperty(p_property);
 	std::vector<std::pair<unsigned, double> >& r_daughter_data = p_property->rGetMachineData();
 
@@ -271,6 +273,69 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 		 return machine_coords;
 
  }
+
+template<unsigned DIM>
+std::vector<unsigned> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineData(CellPtr pCell)
+{
+
+
+	unsigned totalNumberMachines=0u;
+	unsigned totalNumTypeL=0u;
+	unsigned totalNumTypeB=0u;
+	unsigned totalNumTypeH=0u;
+
+
+	// Get this cell's type six machine property data
+	CellPropertyCollection collection = pCell->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+	if (collection.GetSize() != 1)
+	{
+		EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
+	}
+	boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
+	std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+
+	 unsigned numMachineFiresInThisTimeStep=p_property->GetNumMachineFiresInThisTimeStep();
+
+
+
+	// loop over machines
+	for (auto& r_pair : r_data)
+	{
+		if (r_pair.first==1)
+		{
+			totalNumTypeL++;
+		}
+		else if (r_pair.first==2)
+		{
+			totalNumTypeL++;
+			totalNumTypeB++;
+		}
+		else if (r_pair.first==3)
+		{
+			totalNumTypeL++;
+			totalNumTypeB++;
+			totalNumTypeH++;
+		}
+	  }
+
+
+
+	totalNumberMachines+=r_data.size();
+
+
+    std::vector<unsigned> machine_data(4);
+	machine_data[0]=totalNumberMachines;
+	machine_data[1]=totalNumTypeL;
+	machine_data[2]=totalNumTypeB;
+	machine_data[3]=totalNumTypeH;
+	machine_data[4]=numMachineFiresInThisTimeStep;
+
+
+    return machine_data;
+}
+
+
+
 
 template<unsigned DIM>
 void NodeBasedCellPopulationWithCapsules<DIM>::OutputCellPopulationParameters(out_stream& rParamsFile)

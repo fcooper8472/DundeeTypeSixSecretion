@@ -33,29 +33,30 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef FORWARDEULERNUMERICALMETHODFORCAPSULES_HPP_
-#define FORWARDEULERNUMERICALMETHODFORCAPSULES_HPP_
+#ifndef MACHINESTATECOUNTWRITER_HPP_
+#define MACHINESTATECOUNTWRITER_HPP_
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
-
-#include "AbstractNumericalMethod.hpp"
+#include "AbstractCellWriter.hpp"
+#include "UblasVectorInclude.hpp"
 
 /**
- * Implements forward Euler time stepping specific for Capsules, where the position and angle are both updated each
- * time step.
+ * A class written using the visitor pattern for writing the scaling of two-dimensional capsules.
+ *
+ * The output file is called cellscaling.dat by default. If VTK is switched on,
+ * then the writer also specifies the VTK output for each cell, which is stored in
+ * the VTK cell data "Cell scaling" by default.
  */
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
-class ForwardEulerNumericalMethodForCapsules : public AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM> {
-
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+class MachineStateCountWriter : public AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>
+{
 private:
-
     /** Needed for serialization. */
     friend class boost::serialization::access;
-    friend class TestNumericalMethodForCapsules;
 
     /**
-     * Save or restore the simulation.
+     * Serialize the object and its member variables.
      *
      * @param archive the archive
      * @param version the current version of this class
@@ -63,58 +64,37 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM> >(*this);
+        archive & boost::serialization::base_object<AbstractCellWriter<ELEMENT_DIM, SPACE_DIM> >(*this);
     }
-
-    /**
-     * Calculate the 3D mass per unit volume of a 2D capsule (a cylinder capped by two hemispheres).
-     * @param length the length of the cylinder
-     * @param radius the radius of the cylinder and each hemisphere
-     * @return the mass per unit volume of the capsule
-     */
-    double CalculateMassOfCapsule(const double length, const double radius);
-
-    /**
-     * Calculate the 3D moment of inertia of a 2D capsule (a cylinder capped by two hemispheres), about its centre.
-     * @param length the length of the cylinder
-     * @param radius the radius of the cylinder and each hemisphere
-     * @return the moment of inertia of the capsule
-     */
-    double CalculateMomentOfInertiaOfCapsule(const double length, const double radius);
 
 public:
 
     /**
-     * Constructor.
+     * Default constructor.
      */
-    ForwardEulerNumericalMethodForCapsules();
+    MachineStateCountWriter();
+
+
 
     /**
-     * Destructor.
-     */
-    virtual ~ForwardEulerNumericalMethodForCapsules() = default;
-
-    /**
-     * Overridden UpdateAllNodePositions() method.
+     * Overridden VisitCell() method.
      *
-     * @param dt Time step size
-     */
-    void UpdateAllNodePositions(double dt);
-
-    /**
-     * Overridden OutputNumericalMethodParameters() method.
+     * Visit a cell and write its orientation.
      *
-     * @param rParamsFile Reference to the parameter output filestream
+     * Outputs a line of space-separated values of the form:
+     * ...[location index] [cell id] [x-pos] [y-pos] [z-pos] [radius] [length] [z-scaling] ...
+     * with [z-pos] and [z-scaling] included for 3 dimensional simulations.
+     *
+     * This is appended to the output written by AbstractCellBasedWriter, which is a single
+     * value [present simulation time], followed by a tab.
+     *
+     * @param pCell a cell
+     * @param pCellPopulation a pointer to the cell population owning the cell
      */
-    virtual void OutputNumericalMethodParameters(out_stream& rParamsFile);
-
-    bool mAxialCapsuleGrowth;
-
-    void SetAxialCapsuleGrowth(bool);
+    virtual void VisitCell(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation);
 };
 
-// Serialization for Boost >= 1.36
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_ALL_DIMS(ForwardEulerNumericalMethodForCapsules)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(MachineStateCountWriter)
 
-#endif /*FORWARDEULERNUMERICALMETHODFORCAPSULES_HPP_*/
+#endif /* MACHINESTATECOUNTWRITER_HPP_ */

@@ -101,6 +101,7 @@ public:
 
 
 
+
     unsigned GetTotalNumberOfMachines(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
 
 };

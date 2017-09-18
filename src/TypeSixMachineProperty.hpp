@@ -19,6 +19,8 @@ private:
 
     /** \todo Document member */
     std::vector<std::pair<unsigned, double> > mMachineData;
+    unsigned mNumMachineFiresInThisTimeStep;
+
 
 public:
 
@@ -36,6 +38,11 @@ public:
      * @return #mMachineData
      */
     std::vector<std::pair<unsigned, double> >& rGetMachineData();
+
+
+    unsigned GetNumMachineFiresInThisTimeStep();
+    void SetNumMachineFiresInThisTimeStep(unsigned numMachineFiresInThisTimeStep);
+
 };
 
 #include "SerializationExportWrapper.hpp"

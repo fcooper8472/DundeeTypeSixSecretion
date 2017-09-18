@@ -39,13 +39,23 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UblasCustomFunctions.hpp"
 
 #include "UniformCellCycleModel.hpp"
+#include "FixedG1GenerationalCellCycleModel.hpp"
+#include "AbstractPhaseBasedCellCycleModel.hpp"
+#include "AbstractSimpleCellCycleModel.hpp"
+
+#include "GammaG1CellCycleModel.hpp"
+
+
 
 #include "Debug.hpp"
 #include "NodeBasedCellPopulation.hpp"
 
+
+
+
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::ForwardEulerNumericalMethodForCapsules()
-    : AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM>()
+    : AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM>(),mAxialCapsuleGrowth(true)
 {
 }
 
@@ -61,30 +71,38 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 			   ++cell_iter)
 			{
 
-
-				  if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
+				  //if (bool(dynamic_cast<AbstractSimpleCellCycleModel*>(cell_iter->GetCellCycleModel())))
 				  {
+
 
                       if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 					  {
-						  double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
-						  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
 
-						  double initial_length = 2.0;
+                    	      double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
 
+                    		    UniformCellCycleModel* p_model = (static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel()));
 
-					  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
+                    		     const double cell_cycle_time =  p_model->GetCellCycleDuration() ;
 
-
-					  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
-
-					  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
-					  //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+								 double initial_length = 2.0;
 
 
-					  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+								  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
 
-					      }
+
+								  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+
+								  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+								  //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+
+
+								  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+
+					  }
+
+
+
+
 
 				  }
 			}
@@ -124,6 +142,12 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 //        node_iter->rGetModifiableLocation() += random_movement;
 ////        node_iter->rGetNodeAttributes()[NA_ANGLE] += random_rotation;
 //    }
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM, SPACE_DIM>::SetAxialCapsuleGrowth(bool axialCapsuleGrowth)
+{
+	mAxialCapsuleGrowth = axialCapsuleGrowth;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

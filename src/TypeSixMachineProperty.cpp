@@ -14,6 +14,16 @@ std::vector<std::pair<unsigned, double> >& TypeSixMachineProperty::rGetMachineDa
     return mMachineData;
 }
 
+unsigned TypeSixMachineProperty::GetNumMachineFiresInThisTimeStep()
+{
+    return mNumMachineFiresInThisTimeStep;
+}
+
+void TypeSixMachineProperty::SetNumMachineFiresInThisTimeStep(unsigned numMachineFiresInThisTimeStep)
+{
+     mNumMachineFiresInThisTimeStep=numMachineFiresInThisTimeStep;
+}
+
 #include "SerializationExportWrapperForCpp.hpp"
 // Declare identifier for the serializer
 CHASTE_CLASS_EXPORT(TypeSixMachineProperty)

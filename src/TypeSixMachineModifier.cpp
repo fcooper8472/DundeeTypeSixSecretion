@@ -26,14 +26,15 @@ void TypeSixMachineModifier<DIM>::SetMachineParametersFromGercEtAl()
 	// Gerc et al, Cell Reports Gerc et al., 2015, Cell Reports 	12 	, 2131–2142	 2015
 	// http://dx.doi.org/10.1016/j.celrep.2015.08.05
 
-	mk_7=1/30.0;
+	mk_7=1.0/30.0;
     mk_4=0.69/2.0-mk_7;
 
-	mk_1= 4.4;
-	mk_2=0.05;
-    mk_3=(0.6/6.0);
-    mk_6=1.0;
+	mk_1= 1.2;
+    mk_3=(mk_4+mk_7)/3.0;
+    mk_6=0.02*mk_7; //1.0/30.0;
     mk_5=mk_6+mk_7;
+	mk_2=mk_6; //0.05;
+
 
     mk_2=mk_2*60.0;
     mk_3=mk_3*60.0;
@@ -236,6 +237,8 @@ unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopul
     return totalNumberMachines;
 }
 
+
+
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
@@ -244,6 +247,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
     ///\todo Make sure the cell population is updated?
     //rCellPopulation.Update();
     double dt = SimulationTime::Instance()->GetTimeStep();
+
 
     // Iterate over cell population and update machines
 	for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
@@ -258,7 +262,9 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+        //unsigned& r_NumMachineFiresInThisTimeStep = p_property->rGetNumMachineFiresInThisTimeStep();
 
+        unsigned numMachineFiresInThisTimeStep=0;
 
         assert((mk_1 + mk_2 + mk_3 + mk_4 + mk_5 + mk_6 + mk_7 )*dt <= 1.0);
 
@@ -300,6 +306,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		            else if (r < (mk_6 + mk_7)*dt) // Aggressive type VI fires without any neighbour contact
 		            {
 		                new_state = 0u;
+		                numMachineFiresInThisTimeStep++;
 		            }
 		            break;
 //		        case 4u:
@@ -311,7 +318,12 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 		    }
 		    r_pair.first = new_state;
         }
+        p_property->SetNumMachineFiresInThisTimeStep(numMachineFiresInThisTimeStep);
+
+
+        //r_NumMachineFiresInThisTimeStep=
     }
+
 		
 
         // Iterate over cell population and create new machines randomly
