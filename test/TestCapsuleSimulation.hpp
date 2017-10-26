@@ -1122,7 +1122,7 @@ public:
                          simulator.SetOutputDirectory("TestSingleCapsuleWithDivisionAndMachinesNoKillerGerc");
                          double dt = 1.0/1200.0;
                          simulator.SetDt(dt);
-                         simulator.SetSamplingTimestepMultiple(10);
+                         simulator.SetSamplingTimestepMultiple(1);
 
                          auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<2,2>>();
                          simulator.SetNumericalMethod(p_numerical_method);
