@@ -26,16 +26,24 @@ void TypeSixMachineModifier<DIM>::SetMachineParametersFromGercEtAl()
 	// Gerc et al, Cell Reports Gerc et al., 2015, Cell Reports 	12 	, 2131–2142	 2015
 	// http://dx.doi.org/10.1016/j.celrep.2015.08.05
 
-	mk_7=1.0/30.0;
-    mk_4=0.69/2.0-mk_7;
+	//mk_7=1.0/30.0;
+    //mk_4=0.69/2.0-mk_7;
 
-	mk_1= 1.2;
-    mk_3=(mk_4+mk_7)/3.0;
-    mk_6=0.02*mk_7; //1.0/30.0;
-    mk_5=mk_6+mk_7;
-	mk_2=mk_6; //0.05;
+	mk_1= 0.0005*100.0;
+	mk_2=0.1;
+	mk_3=0.18;
+	mk_4=0.21;
+	mk_5=0.1309;
+	mk_6=0.10;
+	mk_7=0.12;
+
+//    mk_3=(mk_4+mk_7)/3.0;
+//    mk_6=0.02*mk_7; //1.0/30.0;
+//    mk_5=mk_6+mk_7;
+//	mk_2=mk_6; //0.05;
 
 
+	mk_1=mk_1*60.0;
     mk_2=mk_2*60.0;
     mk_3=mk_3*60.0;
     mk_4=mk_4*60.0;
