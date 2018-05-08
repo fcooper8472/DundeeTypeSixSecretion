@@ -51,23 +51,23 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
     auto location_a = rNodeA.rGetLocation();
     auto location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
-    geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_a),
-                               location_a[1] + 0.5 * length_a * sin(angle_a));
+    geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_theta_a),
+                               location_a[1] + 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_a),
-                               location_a[1] - 0.5 * length_a * sin(angle_a));
+    geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_theta_a),
+                               location_a[1] - 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_b),
-                               location_b[1] + 0.5 * length_b * sin(angle_b));
+    geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_theta_b),
+                               location_b[1] + 0.5 * length_b * sin(angle_theta_b));
 
-    geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_b),
-                               location_b[1] - 0.5 * length_b * sin(angle_b));
+    geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_theta_b),
+                               location_b[1] - 0.5 * length_b * sin(angle_theta_b));
 
     geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
     geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
@@ -102,25 +102,25 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceAttributes(Node<SPACE_D
     const auto& location_a = rNodeA.rGetLocation();
     const auto& location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double radius_a = rNodeA.rGetNodeAttributes()[NA_RADIUS];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double radius_b = rNodeB.rGetNodeAttributes()[NA_RADIUS];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
     // Calculate the ends of capsule a, with a default value of z = 0
-    double capsule_a_end_1[3] = {location_a[0] + 0.5 * length_a * cos(angle_a),
-                                 location_a[1] + 0.5 * length_a * sin(angle_a), 0.0};
-    double capsule_a_end_2[3] = {location_a[0] - 0.5 * length_a * cos(angle_a),
-                                 location_a[1] - 0.5 * length_a * sin(angle_a), 0.0};
+    double capsule_a_end_1[3] = {location_a[0] + 0.5 * length_a * cos(angle_theta_a),
+                                 location_a[1] + 0.5 * length_a * sin(angle_theta_a), 0.0};
+    double capsule_a_end_2[3] = {location_a[0] - 0.5 * length_a * cos(angle_theta_a),
+                                 location_a[1] - 0.5 * length_a * sin(angle_theta_a), 0.0};
 
     // Calculate the ends of capsule b, with a default value of z = 0
-    double capsule_b_end_1[3] = {location_b[0] + 0.5 * length_b * cos(angle_b),
-                                 location_b[1] + 0.5 * length_b * sin(angle_b), 0.0};
-    double capsule_b_end_2[3] = {location_b[0] - 0.5 * length_b * cos(angle_b),
-                                 location_b[1] - 0.5 * length_b * sin(angle_b), 0.0};
+    double capsule_b_end_1[3] = {location_b[0] + 0.5 * length_b * cos(angle_theta_b),
+                                 location_b[1] + 0.5 * length_b * sin(angle_theta_b), 0.0};
+    double capsule_b_end_2[3] = {location_b[0] - 0.5 * length_b * cos(angle_theta_b),
+                                 location_b[1] - 0.5 * length_b * sin(angle_theta_b), 0.0};
 
     // Create two arrays to be filled by the vtk algorithm
     double closest_point_a[3];
@@ -173,23 +173,23 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
     auto location_a = rNodeA.rGetLocation();
     auto location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
+    const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
-    geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_a),
-                               location_a[1] + 0.5 * length_a * sin(angle_a));
+    geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_theta_a),
+                               location_a[1] + 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_a),
-                               location_a[1] - 0.5 * length_a * sin(angle_a));
+    geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_theta_a),
+                               location_a[1] - 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_b),
-                               location_b[1] + 0.5 * length_b * sin(angle_b));
+    geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_theta_b),
+                               location_b[1] + 0.5 * length_b * sin(angle_theta_b));
 
-    geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_b),
-                               location_b[1] - 0.5 * length_b * sin(angle_b));
+    geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_theta_b),
+                               location_b[1] - 0.5 * length_b * sin(angle_theta_b));
 
     geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
     geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
@@ -210,7 +210,7 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         end_point[1] = capsule_a_end_1.get<1>();
         centre_capsule = location_b;
         rContactDistA = 0.5 * length_a;
-        angle_for_calculation = angle_b;
+        angle_for_calculation = angle_theta_b;
         point_in_capsule_a = true;
     }
     else if(fabs(boost::geometry::distance(capsule_a_end_2, capsule_axis_b) - shortestDistance) < 1e-12)
@@ -219,7 +219,7 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         end_point[1] = capsule_a_end_2.get<1>();
         centre_capsule = location_b;
         rContactDistA = -0.5 * length_a;
-        angle_for_calculation = angle_b;
+        angle_for_calculation = angle_theta_b;
         point_in_capsule_a = true;
     }
     else if(fabs(boost::geometry::distance(capsule_b_end_1, capsule_axis_a) - shortestDistance) < 1e-12)
@@ -228,7 +228,7 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         end_point[1] = capsule_b_end_1.get<1>();
         centre_capsule = location_a;
         rContactDistB = 0.5 * length_b;
-        angle_for_calculation = angle_a;
+        angle_for_calculation = angle_theta_a;
         point_in_capsule_a = false;
     }
     else if(fabs(boost::geometry::distance(capsule_b_end_2, capsule_axis_a) - shortestDistance) < 1e-12)
@@ -237,7 +237,7 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
         end_point[1] = capsule_b_end_2.get<1>();
         centre_capsule = location_a;
         rContactDistB = -0.5 * length_b;
-        angle_for_calculation = angle_a;
+        angle_for_calculation = angle_theta_a;
         point_in_capsule_a = false;
     }
     else
@@ -354,16 +354,16 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
             c_vector<double, SPACE_DIM> force_a_b = force_direction_a_to_b * force_magnitude;
             c_vector<double, SPACE_DIM> force_b_a = -1.0 * force_a_b;
 
-            const double angle_a = r_node_a.rGetNodeAttributes()[NA_THETA];
-            const double angle_b = r_node_b.rGetNodeAttributes()[NA_THETA];
+            const double angle_theta_a = r_node_a.rGetNodeAttributes()[NA_THETA];
+            const double angle_theta_b = r_node_b.rGetNodeAttributes()[NA_THETA];
 
             c_vector<double, SPACE_DIM> torque_vec_a;
-            torque_vec_a[0] = contact_dist_a * cos(angle_a);
-            torque_vec_a[1] = contact_dist_a * sin(angle_a);
+            torque_vec_a[0] = contact_dist_a * cos(angle_theta_a);
+            torque_vec_a[1] = contact_dist_a * sin(angle_theta_a);
 
             c_vector<double, SPACE_DIM> torque_vec_b;
-            torque_vec_b[0] = contact_dist_b * cos(angle_b);
-            torque_vec_b[1] = contact_dist_b * sin(angle_b);
+            torque_vec_b[0] = contact_dist_b * cos(angle_theta_b);
+            torque_vec_b[1] = contact_dist_b * sin(angle_theta_b);
 
             // Calculate the 2D cross product of two vectors
             auto cross_product = [](c_vector<double, SPACE_DIM> a, c_vector<double, SPACE_DIM> b) -> double
