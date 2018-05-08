@@ -17,7 +17,7 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
         {
         	Node<SPACE_DIM>* p_node = rCellPopulation.GetNodeCorrespondingToCell(pParentCell);
 
-        	const double orientation_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
+        	const double orientation_angle = p_node->rGetNodeAttributes()[NA_THETA];
         	//const double distance = 0.25*p_node->rGetNodeAttributes()[NA_LENGTH] + 0.5*p_node->rGetNodeAttributes()[NA_RADIUS];
         	//const double distance = 0.5*p_node->rGetNodeAttributes()[NA_LENGTH] + p_node->rGetNodeAttributes()[NA_RADIUS];
         	const double distance=1.5;

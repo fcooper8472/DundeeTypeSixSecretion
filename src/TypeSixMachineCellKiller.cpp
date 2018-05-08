@@ -83,7 +83,7 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                     
                     // Compute distance between (X,Y) and this neighbouring cell's line segment
                     auto neighbour_location = p_neighbour->rGetLocation();
-				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_ANGLE];
+				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_THETA];
 				    const double neighbour_length = p_neighbour->rGetNodeAttributes()[NA_LENGTH];
 
 		            double R = p_neighbour->rGetNodeAttributes()[NA_RADIUS];

@@ -16,7 +16,7 @@ class TestCapsuleNodeAttributes : public CxxTest::TestSuite
 {
 public:
 
-    void TestAttributes() throw(Exception)
+    void TestAttributes2d() throw(Exception)
     {
         // index, {x, y}
         Node<2> node(0u, std::vector<double>{0.0, 0.0});
@@ -27,11 +27,33 @@ public:
         std::vector<double>& attributes = node.rGetNodeAttributes();
 
         attributes.resize(NA_VEC_LENGTH);
-        attributes[NA_ANGLE] = 1.23;
+        attributes[NA_THETA] = 1.23;
         attributes[NA_LENGTH] = 2.34;
         attributes[NA_RADIUS] = 3.45;
 
-        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_ANGLE], 1.23, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_THETA], 1.23, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_LENGTH], 2.34, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_RADIUS], 3.45, 1e-6);
+    }
+
+    void TestAttributes3d() throw(Exception)
+    {
+        // index, {x, y, z}
+        Node<3> node(0u, std::vector<double>{0.0, 0.0, 0.0});
+
+        // Create node attributes
+        node.AddNodeAttribute(0.0);
+
+        std::vector<double>& attributes = node.rGetNodeAttributes();
+
+        attributes.resize(NA_VEC_LENGTH);
+        attributes[NA_THETA] = 1.23;
+        attributes[NA_PHI] = 0.34;
+        attributes[NA_LENGTH] = 2.34;
+        attributes[NA_RADIUS] = 3.45;
+
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_THETA], 1.23, 1e-6);
+        TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_PHI], 0.34, 1e-6);
         TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_LENGTH], 2.34, 1e-6);
         TS_ASSERT_DELTA(node.rGetNodeAttributes()[NA_RADIUS], 3.45, 1e-6);
     }

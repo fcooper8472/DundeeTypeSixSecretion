@@ -51,10 +51,10 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
     auto location_a = rNodeA.rGetLocation();
     auto location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
     geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_a),
@@ -102,11 +102,11 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceAttributes(Node<SPACE_D
     const auto& location_a = rNodeA.rGetLocation();
     const auto& location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double radius_a = rNodeA.rGetNodeAttributes()[NA_RADIUS];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double radius_b = rNodeB.rGetNodeAttributes()[NA_RADIUS];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
@@ -173,10 +173,10 @@ void CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPoin
     auto location_a = rNodeA.rGetLocation();
     auto location_b = rNodeB.rGetLocation();
 
-    const double angle_a = rNodeA.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_a = rNodeA.rGetNodeAttributes()[NA_THETA];
     const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    const double angle_b = rNodeB.rGetNodeAttributes()[NA_ANGLE];
+    const double angle_b = rNodeB.rGetNodeAttributes()[NA_THETA];
     const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
     geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_a),
@@ -322,7 +322,7 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
          iter != p_cell_population->rGetMesh().GetNodeIteratorEnd();
          ++iter)
     {
-        iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] = 0.0;
+        iter->rGetNodeAttributes()[NA_APPLIED_THETA] = 0.0;
     }
 
     // Calculate force and applied angle contributions from each pair
@@ -354,8 +354,8 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
             c_vector<double, SPACE_DIM> force_a_b = force_direction_a_to_b * force_magnitude;
             c_vector<double, SPACE_DIM> force_b_a = -1.0 * force_a_b;
 
-            const double angle_a = r_node_a.rGetNodeAttributes()[NA_ANGLE];
-            const double angle_b = r_node_b.rGetNodeAttributes()[NA_ANGLE];
+            const double angle_a = r_node_a.rGetNodeAttributes()[NA_THETA];
+            const double angle_b = r_node_b.rGetNodeAttributes()[NA_THETA];
 
             c_vector<double, SPACE_DIM> torque_vec_a;
             torque_vec_a[0] = contact_dist_a * cos(angle_a);
@@ -371,8 +371,8 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
                 return a[0] * b[1] - b[0] * a[1];
             };
 
-            r_node_a.rGetNodeAttributes()[NA_APPLIED_ANGLE] += cross_product(torque_vec_a, force_b_a);
-            r_node_b.rGetNodeAttributes()[NA_APPLIED_ANGLE] += cross_product(torque_vec_b, force_a_b);
+            r_node_a.rGetNodeAttributes()[NA_APPLIED_THETA] += cross_product(torque_vec_a, force_b_a);
+            r_node_b.rGetNodeAttributes()[NA_APPLIED_THETA] += cross_product(torque_vec_b, force_a_b);
 
             r_node_b.AddAppliedForceContribution(force_a_b);
             r_node_a.AddAppliedForceContribution(force_b_a);

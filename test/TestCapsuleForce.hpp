@@ -36,7 +36,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 2.0;
             attributes_a[NA_RADIUS] = 0.5;
 
@@ -45,7 +45,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.25;
 
@@ -62,7 +62,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 2.0;
             attributes_a[NA_RADIUS] = 0.75;
 
@@ -71,7 +71,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.5 * M_PI;
+            attributes_b[NA_THETA] = 0.5 * M_PI;
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.05;
 
@@ -88,7 +88,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 2.0;
             attributes_a[NA_RADIUS] = 0.5;
 
@@ -97,7 +97,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.5 * M_PI;
+            attributes_b[NA_THETA] = 0.5 * M_PI;
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.5;
 
@@ -114,7 +114,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 4.0;
             attributes_a[NA_RADIUS] = 0.12;
 
@@ -123,7 +123,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = atan(0.75);
+            attributes_b[NA_THETA] = atan(0.75);
             attributes_b[NA_LENGTH] = 4.0;
             attributes_b[NA_RADIUS] = 0.13;
 
@@ -145,7 +145,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 2.0;
 
             Node<2> node_b(0u, std::vector<double>{0.0, 3.0});
@@ -153,7 +153,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 2.0;
 
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
@@ -186,7 +186,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = 0.0;
+            attributes_a[NA_THETA] = 0.0;
             attributes_a[NA_LENGTH] = 2.0;
 
             Node<2> node_b(0u, std::vector<double>{0.0, 3.0});
@@ -194,7 +194,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 18.0;
 
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
@@ -227,7 +227,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = atan(0.75);
+            attributes_a[NA_THETA] = atan(0.75);
             attributes_a[NA_LENGTH] = 4.0;
 
             Node<2> node_b(0u, std::vector<double>{4.0, 0.0});
@@ -235,7 +235,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 4.0;
 
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
@@ -268,7 +268,7 @@ public:
 
             std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
             attributes_a.resize(NA_VEC_LENGTH);
-            attributes_a[NA_ANGLE] = atan(0.75) + M_PI;
+            attributes_a[NA_THETA] = atan(0.75) + M_PI;
             attributes_a[NA_LENGTH] = 4.0;
 
             Node<2> node_b(0u, std::vector<double>{4.0, 0.0});
@@ -276,7 +276,7 @@ public:
 
             std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
             attributes_b.resize(NA_VEC_LENGTH);
-            attributes_b[NA_ANGLE] = 0.0;
+            attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 4.0;
 
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
@@ -339,18 +339,18 @@ public:
         mesh.GetNode(0u)->AddNodeAttribute(0.0);
         mesh.GetNode(0u)->ClearAppliedForce();
         mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-        mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_THETA] = 0.5 * M_PI;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
         mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
-        mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_ANGLE] = 0.0;
+        mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_THETA] = 0.0;
 
         mesh.GetNode(1u)->AddNodeAttribute(0.0);
         mesh.GetNode(1u)->ClearAppliedForce();
         mesh.GetNode(1u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-        mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_THETA] = 0.5 * M_PI;
         mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
         mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 0.25;
-        mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_ANGLE] = 0.0;
+        mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_THETA] = 0.0;
 
         //Create cells
         std::vector<CellPtr> cells;
@@ -371,11 +371,11 @@ public:
         {
             TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetAppliedForce()[0], 0.0, 1e-6);
             TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetAppliedForce()[1], 0.0, 1e-6);
-            TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_ANGLE], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(0u)->rGetNodeAttributes()[NA_APPLIED_THETA], 0.0, 1e-6);
 
             TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetAppliedForce()[0], 0.0, 1e-6);
             TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetAppliedForce()[1], 0.0, 1e-6);
-            TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_ANGLE], 0.0, 1e-6);
+            TS_ASSERT_DELTA(mesh.GetNode(1u)->rGetNodeAttributes()[NA_APPLIED_THETA], 0.0, 1e-6);
         }
 
         MARK;

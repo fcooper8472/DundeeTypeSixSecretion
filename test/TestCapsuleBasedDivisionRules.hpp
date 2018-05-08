@@ -81,19 +81,19 @@ public:
 
     	        mesh.GetNode(0u)->AddNodeAttribute(0.0);
     	        mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-    	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_ANGLE] = 0.25 * M_PI;
+    	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_THETA] = 0.25 * M_PI;
     	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
     	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
 
     	        mesh.GetNode(1u)->AddNodeAttribute(0.0);
     	        mesh.GetNode(1u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-    	        mesh.GetNode(1u)->rGetNodeAttributes()[NA_ANGLE] = 0.5 * M_PI;
+    	        mesh.GetNode(1u)->rGetNodeAttributes()[NA_THETA] = 0.5 * M_PI;
     	        mesh.GetNode(1u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
     	        mesh.GetNode(1u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
 
     	        mesh.GetNode(2u)->AddNodeAttribute(0.0);
     	        mesh.GetNode(2u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
-    	        mesh.GetNode(2u)->rGetNodeAttributes()[NA_ANGLE] = 0.25 * M_PI;
+    	        mesh.GetNode(2u)->rGetNodeAttributes()[NA_THETA] = 0.25 * M_PI;
     	        mesh.GetNode(2u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
     	        mesh.GetNode(2u)->rGetNodeAttributes()[NA_RADIUS] = 1.0;
 

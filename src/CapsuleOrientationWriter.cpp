@@ -57,7 +57,7 @@ c_vector<double, SPACE_DIM> CapsuleOrientationWriter<ELEMENT_DIM, SPACE_DIM>::Ge
     if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(pCellPopulation))
     {
         unsigned node_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
-        double angle = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_ANGLE];
+        double angle = pCellPopulation->GetNode(node_index)->rGetNodeAttributes()[NA_THETA];
 
         orientation[0] = cos(angle);
         orientation[1] = sin(angle);

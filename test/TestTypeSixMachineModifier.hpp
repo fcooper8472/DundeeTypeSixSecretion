@@ -54,7 +54,7 @@ public:
             
 	        std::vector<double>& attributes = mesh.GetNode(i)->rGetNodeAttributes();
 	        attributes.resize(NA_VEC_LENGTH);
-	        attributes[NA_ANGLE] = 1.23;
+	        attributes[NA_THETA] = 1.23;
 	        attributes[NA_LENGTH] = 2.34;
 	        attributes[NA_RADIUS] = 3.45;
         }
@@ -102,7 +102,7 @@ public:
             
 	        std::vector<double>& attributes = mesh.GetNode(i)->rGetNodeAttributes();
 	        attributes.resize(NA_VEC_LENGTH);
-	        attributes[NA_ANGLE] = 1.23;
+	        attributes[NA_THETA] = 1.23;
 	        attributes[NA_LENGTH] = 2.34;
 	        attributes[NA_RADIUS] = 3.45;
         }
@@ -155,7 +155,7 @@ public:
             
 	        std::vector<double>& attributes = mesh.GetNode(i)->rGetNodeAttributes();
 	        attributes.resize(NA_VEC_LENGTH);
-	        attributes[NA_ANGLE] = 0.0;
+	        attributes[NA_THETA] = 0.0;
 	        attributes[NA_LENGTH] = 0.1;
 	        attributes[NA_RADIUS] = 0.5;
         }
