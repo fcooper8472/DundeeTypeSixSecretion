@@ -24,7 +24,7 @@ class TestCapsuleForce : public AbstractCellBasedTestSuite
 {
 public:
 
-    void TestDistanceBetweenTwoCapsules() throw(Exception)
+    void TestDistanceBetweenTwoCapsules2d() throw(Exception)
     {
         CapsuleForce<2, 2> force;
 
@@ -128,6 +128,191 @@ public:
             attributes_b[NA_RADIUS] = 0.13;
 
             const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+        }
+    }
+
+    void TestDistanceBetweenTwoCapsules3d() throw(Exception)
+    {
+        CapsuleForce<3, 3> force;
+
+        // Two horizontal rods a distance 2 from each other
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{1.0, 0.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 0.0;
+            attributes_a[NA_PHI] = 1.0;
+            attributes_a[NA_LENGTH] = 2.0;
+            attributes_a[NA_RADIUS] = 0.5;
+
+            Node<3> node_b(0u, std::vector<double>{1.0, 2.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = 0.0;
+            attributes_b[NA_PHI] = 1.0;
+            attributes_b[NA_LENGTH] = 2.0;
+            attributes_b[NA_RADIUS] = 0.25;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 2.0, 1e-12);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.25, 1e-6);
+        }
+
+        // One horizontal, one vertical, distance 2 from each other
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{1.0, 0.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 0.0;
+            attributes_a[NA_PHI] = M_PI/2.0;
+            attributes_a[NA_LENGTH] = 2.0;
+            attributes_a[NA_RADIUS] = 0.75;
+
+            Node<3> node_b(0u, std::vector<double>{1.0, 3.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = 0.5 * M_PI;
+            attributes_b[NA_PHI] = M_PI/2.0;
+            attributes_b[NA_LENGTH] = 2.0;
+            attributes_b[NA_RADIUS] = 0.05;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 2.0, 1e-9);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.2, 1e-6);
+        }
+
+        // Intersecting cross shape, distance 0 from each other
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 0.0;
+            attributes_a[NA_PHI] = M_PI/2.0;
+            attributes_a[NA_LENGTH] = 2.0;
+            attributes_a[NA_RADIUS] = 0.5;
+
+            Node<3> node_b(0u, std::vector<double>{0.0, 0.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = 0.5 * M_PI;
+            attributes_b[NA_PHI] = M_PI/2.0;
+            attributes_b[NA_LENGTH] = 2.0;
+            attributes_b[NA_RADIUS] = 0.5;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), 1.0, 1e-6);
+        }
+
+        // 3,4,5 triangle angles for capsule B above capsule A which is horizontal.
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{4.0, 0.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 0.0;
+            attributes_a[NA_PHI] = M_PI/2.0;
+            attributes_a[NA_LENGTH] = 4.0;
+            attributes_a[NA_RADIUS] = 0.12;
+
+            Node<3> node_b(0u, std::vector<double>{4.0, 3.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = atan(0.75);
+            attributes_b[NA_PHI] = M_PI/2.0;
+            attributes_b[NA_LENGTH] = 4.0;
+            attributes_b[NA_RADIUS] = 0.13;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 1.8, 1e-9);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+        }
+
+        // Intersecting cross shape, distance 0 from each other
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 1.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 0.0;
+            attributes_a[NA_PHI] = M_PI/2.0;
+            attributes_a[NA_LENGTH] = 2.0;
+            attributes_a[NA_RADIUS] = 0.5;
+
+            Node<3> node_b(0u, std::vector<double>{0.0, 0.0, 0.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = 0.5 * M_PI;
+            attributes_b[NA_PHI] = M_PI/2.0;
+            attributes_b[NA_LENGTH] = 2.0;
+            attributes_b[NA_RADIUS] = 0.5;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 1.0, 1e-9);
+
+            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), 0.0, 1e-6);
+        }
+
+        // 3,4,5 triangle angles for capsule B above capsule A which is horizontal.
+        {
+            MARK;
+            // index, {x, y, z}
+            Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 0.0});
+            node_a.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_a = node_a.rGetNodeAttributes();
+            attributes_a.resize(NA_VEC_LENGTH);
+            attributes_a[NA_THETA] = 1.0;
+            attributes_a[NA_PHI] = M_PI/2.0;
+            attributes_a[NA_LENGTH] = 4.0;
+            attributes_a[NA_RADIUS] = 0.12;
+
+            Node<3> node_b(0u, std::vector<double>{0.0, 0.0, 3.0});
+            node_b.AddNodeAttribute(0.0);
+
+            std::vector<double> &attributes_b = node_b.rGetNodeAttributes();
+            attributes_b.resize(NA_VEC_LENGTH);
+            attributes_b[NA_THETA] = 1.0;
+            attributes_b[NA_PHI] = M_PI/2.0-atan(0.75);
+            attributes_b[NA_LENGTH] = 4.0;
+            attributes_b[NA_RADIUS] = 0.13;
+
+            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            TS_ASSERT_DELTA(d, 1.8, 1e-9);
 
             TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
         }

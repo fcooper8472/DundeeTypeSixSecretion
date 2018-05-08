@@ -36,8 +36,8 @@ CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CapsuleForce()
         : AbstractForce<ELEMENT_DIM, SPACE_DIM>(),
           mYoungModulus(100.0)
 {
-    assert(ELEMENT_DIM == 2u);
-    assert(SPACE_DIM == 2u);
+    // Has to be either element and space dimensions are both 2 or both 3.
+    assert((ELEMENT_DIM == 2u && SPACE_DIM == 2u) || (ELEMENT_DIM == 3u && SPACE_DIM == 3u));
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
@@ -45,35 +45,220 @@ double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateDistanceBetweenCapsules(
         Node<SPACE_DIM>& rNodeA,
         Node<SPACE_DIM>& rNodeB)
 {
-    using geom_point = boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian>;
-    using geom_segment = boost::geometry::model::segment<geom_point>;
-
     auto location_a = rNodeA.rGetLocation();
     auto location_b = rNodeB.rGetLocation();
 
-    const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
-    const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
+    if (SPACE_DIM==2u)
+    {
+        using geom_point = boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian>;
+        using geom_segment = boost::geometry::model::segment<geom_point>;
 
-    const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
-    const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
+        const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
+        const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
 
-    geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_theta_a),
-                               location_a[1] + 0.5 * length_a * sin(angle_theta_a));
+        const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
+        const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
 
-    geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_theta_a),
-                               location_a[1] - 0.5 * length_a * sin(angle_theta_a));
+        geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_theta_a),
+                                   location_a[1] + 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_theta_b),
-                               location_b[1] + 0.5 * length_b * sin(angle_theta_b));
+        geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_theta_a),
+                                   location_a[1] - 0.5 * length_a * sin(angle_theta_a));
 
-    geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_theta_b),
-                               location_b[1] - 0.5 * length_b * sin(angle_theta_b));
+        geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_theta_b),
+                                   location_b[1] + 0.5 * length_b * sin(angle_theta_b));
 
-    geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
-    geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
+        geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_theta_b),
+                                   location_b[1] - 0.5 * length_b * sin(angle_theta_b));
 
-    return boost::geometry::distance(capsule_axis_a, capsule_axis_b);
+        geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
+        geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
+
+        return boost::geometry::distance(capsule_axis_a, capsule_axis_b);
+    }
+    else
+    {
+        EXCEPT_IF_NOT(SPACE_DIM==3u);
+
+        const double angle_theta_a = rNodeA.rGetNodeAttributes()[NA_THETA];
+        const double angle_phi_a = rNodeA.rGetNodeAttributes()[NA_PHI];
+        const double length_a = rNodeA.rGetNodeAttributes()[NA_LENGTH];
+
+        //PRINT_3_VARIABLES(length_a,angle_theta_a,angle_phi_a);
+
+        const double angle_theta_b = rNodeB.rGetNodeAttributes()[NA_THETA];
+        const double angle_phi_b = rNodeB.rGetNodeAttributes()[NA_PHI];
+        const double length_b = rNodeB.rGetNodeAttributes()[NA_LENGTH];
+
+        //PRINT_3_VARIABLES(length_b,angle_theta_b,angle_phi_b);
+
+/*      // THIS IS A BOOST IMPLEMENTATION THAT THROWS A `NOT YET IMPLEMENTED' ERROR ON 1.58.
+ *      using geom_point = boost::geometry::model::point<double, 3, boost::geometry::cs::cartesian>;
+        using geom_segment = boost::geometry::model::segment<geom_point>;
+
+        geom_point capsule_a_end_1(location_a[0] + 0.5 * length_a * cos(angle_theta_a) * sin(angle_phi_a),
+                                   location_a[1] + 0.5 * length_a * sin(angle_theta_a) * sin(angle_phi_a),
+                                   location_a[2] + 0.5 * length_a * cos(angle_phi_a));
+
+        geom_point capsule_a_end_2(location_a[0] - 0.5 * length_a * cos(angle_theta_a) * sin(angle_phi_a),
+                                   location_a[1] - 0.5 * length_a * sin(angle_theta_a) * sin(angle_phi_a),
+                                   location_a[2] - 0.5 * length_a * cos(angle_phi_a));
+
+        geom_point capsule_b_end_1(location_b[0] + 0.5 * length_b * cos(angle_theta_b) * sin(angle_phi_b),
+                                   location_b[1] + 0.5 * length_b * sin(angle_theta_b) * sin(angle_phi_b),
+                                   location_b[2] + 0.5 * length_b * cos(angle_phi_b));
+
+        geom_point capsule_b_end_2(location_b[0] - 0.5 * length_b * cos(angle_theta_b) * sin(angle_phi_b),
+                                   location_b[1] - 0.5 * length_b * sin(angle_theta_b) * sin(angle_phi_b),
+                                   location_b[2] - 0.5 * length_b * cos(angle_phi_b));
+
+        geom_segment capsule_axis_a(capsule_a_end_1, capsule_a_end_2);
+        geom_segment capsule_axis_b(capsule_b_end_1, capsule_b_end_2);
+
+        return boost::geometry::distance(capsule_axis_a, capsule_axis_b);
+
+        */
+
+        c_vector<double,3u> segment_a_point_1;
+        segment_a_point_1[0] = location_a[0] + 0.5 * length_a * cos(angle_theta_a) * sin(angle_phi_a);
+        segment_a_point_1[1] = location_a[1] + 0.5 * length_a * sin(angle_theta_a) * sin(angle_phi_a);
+        segment_a_point_1[2] = location_a[2] + 0.5 * length_a * cos(angle_phi_a);
+//        PRINT_VECTOR(segment_a_point_1);
+
+        c_vector<double,3u> segment_a_point_2;
+        segment_a_point_2[0] = location_a[0] - 0.5 * length_a * cos(angle_theta_a) * sin(angle_phi_a);
+        segment_a_point_2[1] = location_a[1] - 0.5 * length_a * sin(angle_theta_a) * sin(angle_phi_a);
+        segment_a_point_2[2] = location_a[2] - 0.5 * length_a * cos(angle_phi_a);
+//        PRINT_VECTOR(segment_a_point_2);
+
+        c_vector<double,3u> segment_b_point_1;
+        segment_b_point_1[0] = location_b[0] + 0.5 * length_b * cos(angle_theta_b) * sin(angle_phi_b);
+        segment_b_point_1[1] = location_b[1] + 0.5 * length_b * sin(angle_theta_b) * sin(angle_phi_b);
+        segment_b_point_1[2] = location_b[2] + 0.5 * length_b * cos(angle_phi_b);
+//        PRINT_VECTOR(segment_b_point_1);
+
+        c_vector<double,3u> segment_b_point_2;
+        segment_b_point_2[0] = location_b[0] - 0.5 * length_b * cos(angle_theta_b) * sin(angle_phi_b);
+        segment_b_point_2[1] = location_b[1] - 0.5 * length_b * sin(angle_theta_b) * sin(angle_phi_b);
+        segment_b_point_2[2] = location_b[2] - 0.5 * length_b * cos(angle_phi_b);
+//        PRINT_VECTOR(segment_b_point_2);
+        // Copyright 2001 softSurfer, 2012 Dan Sunday
+        // This code may be freely used, distributed and modified for any purpose
+        // providing that this copyright notice is included with it.
+        // SoftSurfer makes no warranty for this code, and cannot be held
+        // liable for any real or imagined damage resulting from its use.
+        // Users of this code must verify correctness for their application.
+
+
+        //            Vector   u = S1.P1 - S1.P0;
+        //            Vector   v = S2.P1 - S2.P0;
+        //            Vector   w = S1.P0 - S2.P0;
+        c_vector<double, 3u> u = segment_a_point_2 - segment_a_point_1;
+        c_vector<double, 3u> v = segment_b_point_2 - segment_b_point_1;
+        c_vector<double, 3u> w = segment_a_point_1 - segment_b_point_1;
+
+//        PRINT_VECTOR(u);
+//        PRINT_VECTOR(v);
+//        PRINT_VECTOR(w);
+
+        double    a = inner_prod(u,u);         // always >= 0
+        double    b = inner_prod(u,v);
+        double    c = inner_prod(v,v);         // always >= 0
+        double    d = inner_prod(u,w);
+        double    e = inner_prod(v,w);
+        double    D = a*c - b*b;        // always >= 0
+        double    sc, sN, sD = D;       // sc = sN / sD, default sD = D >= 0
+        double    tc, tN, tD = D;       // tc = tN / tD, default tD = D >= 0
+
+        const double SMALL_NUM = 1e-9;
+
+        //PRINT_VARIABLE(D);
+
+        if (D < SMALL_NUM)
+        {   // parallel lines
+            sN = 0;
+            sD = 1;
+            tN = e;
+            tD = c;
+        }
+        else
+        {
+            sN = (b * e - c * d);
+            tN = (a * e - b * d);
+            if (sN < 0)
+            {
+                sN = 0;
+                tN = e;
+                tD = c;
+            }
+            else if (sN > sD)
+            {
+                sN = sD;
+                tN = e + b;
+                tD = c;
+            }
+        }
+
+        if (tN < 0)
+        {
+            tN = 0;
+            if (-d < 0)
+            {
+                sN = 0;
+            }
+            else if (-d > a)
+            {
+                sN = sD;
+            }
+            else
+            {
+                sN = -d;
+                sD = a;
+            }
+        }
+        else if (tN > tD)
+        {
+            tN = tD;
+            if ((-d + b) < 0)
+            {
+                sN = 0;
+            }
+            else if ((-d + b) > a)
+            {
+                sN = sD;
+            }
+            else
+            {
+                sN = (-d + b);
+                sD = a;
+            }
+        }
+
+        if (std::fabs(sN) < SMALL_NUM)
+        {
+            sc = 0;
+        }
+        else
+        {
+            sc = sN / sD;
+        }
+
+        if (std::fabs(tN) < SMALL_NUM)
+        {
+            tc = 0;
+        }
+        else
+        {
+            tc = tN / tD;
+        }
+
+        // get the difference of the two closest points
+        c_vector<double, 3u> dP = w + (sc * u) - (tc * v);  // =  S1(sc) - S2(tc)
+
+        return norm_2(dP);   // return the closest distance
+     }
 }
+
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 double CapsuleForce<ELEMENT_DIM,SPACE_DIM>::CalculateOverlapBetweenCapsules(
