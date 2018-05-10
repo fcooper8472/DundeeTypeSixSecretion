@@ -28,7 +28,7 @@ public:
     {
         CapsuleForce<2, 2> force;
 
-        // Two horizontal rods a distance 2 from each other
+        // Case 1: Two horizontal rods a distance 2 from each other
         {
             // index, {x, y}
             Node<2> node_a(0u, std::vector<double>{1.0, 0.0});
@@ -49,12 +49,32 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.25;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            c_vector<double, 2u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.25, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.25, 1e-6);
+
+            // swap around nodes and check it all still works
+
+            overlap = force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+			TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+			TS_ASSERT_DELTA(vec_a_to_b[1],-1.0, 1e-9);
+			TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+			TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+			TS_ASSERT_DELTA(overlap, -1.25, 1e-6);
         }
 
-        // One horizontal, one vertical, distance 2 from each other
+        // Case 2: One horizontal, one vertical, distance 2 from each other
         {
             // index, {x, y}
             Node<2> node_a(0u, std::vector<double>{1.0, 0.0});
@@ -75,12 +95,21 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.05;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            c_vector<double, 2u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.2, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.2, 1e-6);
         }
 
-        // Intersecting cross shape, distance 0 from each other
+        // Case 3: Intersecting cross shape, distance 0 from each other
         {
             // index, {x, y}
             Node<2> node_a(0u, std::vector<double>{0.0, 0.0});
@@ -101,12 +130,21 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.5;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            c_vector<double, 2u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), 1.0, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, 1.0, 1e-6);
         }
 
-        // Intersecting cross shape, distance 0 from each other
+        // Case 4: a 3,4,5 triangle
         {
             // index, {x, y}
             Node<2> node_a(0u, std::vector<double>{4.0, 0.0});
@@ -127,9 +165,28 @@ public:
             attributes_b[NA_LENGTH] = 4.0;
             attributes_b[NA_RADIUS] = 0.13;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
+            c_vector<double, 2u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, -1.6, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.55, 1e-6);
+
+            // swap around and check things reverse
+            overlap = force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+			TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+			TS_ASSERT_DELTA(vec_a_to_b[1],-1.0, 1e-9);
+			TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+			TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -1.6, 1e-9);
+
+			TS_ASSERT_DELTA(overlap, -1.55, 1e-6);
         }
     }
 
@@ -137,9 +194,8 @@ public:
     {
         CapsuleForce<3, 3> force;
 
-        // Two horizontal rods a distance 2 from each other
+        // Case 1: Two horizontal rods a distance 2 from each other
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{1.0, 0.0, 0.0});
             node_a.AddNodeAttribute(0.0);
@@ -161,15 +217,23 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.25;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 2.0, 1e-12);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.25, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.25, 1e-6);
         }
 
-        // One horizontal, one vertical, distance 2 from each other
+        // Case 2: One horizontal, one vertical, distance 2 from each other
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{1.0, 0.0, 0.0});
             node_a.AddNodeAttribute(0.0);
@@ -191,15 +255,23 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.05;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 2.0, 1e-9);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.2, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.2, 1e-6);
         }
 
-        // Intersecting cross shape, distance 0 from each other
+        // Case 3: Intersecting cross shape, distance 0 from each other
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 0.0});
             node_a.AddNodeAttribute(0.0);
@@ -221,15 +293,23 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.5;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 0.0, 1e-9);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), 1.0, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, 1.0, 1e-6);
         }
 
-        // 3,4,5 triangle angles for capsule B above capsule A which is horizontal.
+        // Case 4: 3,4,5 triangle angles for capsule B above capsule A which is horizontal.
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{4.0, 0.0, 0.0});
             node_a.AddNodeAttribute(0.0);
@@ -251,15 +331,23 @@ public:
             attributes_b[NA_LENGTH] = 4.0;
             attributes_b[NA_RADIUS] = 0.13;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 1.8, 1e-9);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],1.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, -1.6, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.55, 1e-6);
         }
 
-        // Intersecting cross shape, distance 0 from each other
+        // Case 5: Crossing over each other as per case 3, but one hovering 1 unit above in z axis.
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 1.0});
             node_a.AddNodeAttribute(0.0);
@@ -281,15 +369,23 @@ public:
             attributes_b[NA_LENGTH] = 2.0;
             attributes_b[NA_RADIUS] = 0.5;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 1.0, 1e-9);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), 0.0, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],-1.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, 0.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, 0.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, 0.0, 1e-6);
         }
 
-        // 3,4,5 triangle angles for capsule B above capsule A which is horizontal.
+        // Case 6: like case 4, but inclined in PHI direction rather than theta
         {
-            MARK;
             // index, {x, y, z}
             Node<3> node_a(0u, std::vector<double>{0.0, 0.0, 0.0});
             node_a.AddNodeAttribute(0.0);
@@ -311,10 +407,19 @@ public:
             attributes_b[NA_LENGTH] = 4.0;
             attributes_b[NA_RADIUS] = 0.13;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-            TS_ASSERT_DELTA(d, 1.8, 1e-9);
+            c_vector<double, 3u> vec_a_to_b;
+            double distance_centre_mass_to_contact_a;
+            double distance_centre_mass_to_contact_b;
 
-            TS_ASSERT_DELTA(force.CalculateOverlapBetweenCapsules(node_a, node_b, d), -1.55, 1e-6);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, distance_centre_mass_to_contact_a, distance_centre_mass_to_contact_b);
+
+            TS_ASSERT_DELTA(vec_a_to_b[0],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[1],0.0, 1e-9);
+            TS_ASSERT_DELTA(vec_a_to_b[2],1.0, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_a, -1.6, 1e-9);
+            TS_ASSERT_DELTA(distance_centre_mass_to_contact_b, -attributes_b[NA_LENGTH]/2.0, 1e-9);
+
+            TS_ASSERT_DELTA(overlap, -1.55, 1e-6);
         }
     }
 
@@ -341,21 +446,20 @@ public:
             attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 2.0;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-
             double contact_dist_a;
             double contact_dist_b;
             c_vector<double, 2> vec_a_to_b;
 
-            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+            double overlap = force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, contact_dist_a, contact_dist_b);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(vec_a_to_b[0], -8.0 / sqrt(73.0), 1e-6);
             TS_ASSERT_DELTA(vec_a_to_b[1], 3.0 / sqrt(73.0), 1e-6);
+            TS_ASSERT_DELTA(overlap, -sqrt(73), 1e-9);
 
             // Swap a->b for coverage
-            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, contact_dist_b, contact_dist_a);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
@@ -382,13 +486,11 @@ public:
             attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 18.0;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-
             double contact_dist_a;
             double contact_dist_b;
             c_vector<double, 2> vec_a_to_b;
 
-            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, contact_dist_a, contact_dist_b);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
@@ -396,7 +498,7 @@ public:
             TS_ASSERT_DELTA(vec_a_to_b[1], 1.0, 1e-6);
 
             // Swap a->b
-            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, contact_dist_b, contact_dist_a);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, 0.5 * attributes_b[NA_LENGTH], 1e-6);
@@ -423,13 +525,11 @@ public:
             attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 4.0;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-
             double contact_dist_a;
             double contact_dist_b;
             c_vector<double, 2> vec_a_to_b;
 
-            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, contact_dist_a, contact_dist_b);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
@@ -437,7 +537,7 @@ public:
             TS_ASSERT_DELTA(vec_a_to_b[1], -1.0, 1e-6);
 
             // Swap a->b for coverage
-            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, contact_dist_b, contact_dist_a);
 
             TS_ASSERT_DELTA(contact_dist_a, -0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
@@ -464,13 +564,11 @@ public:
             attributes_b[NA_THETA] = 0.0;
             attributes_b[NA_LENGTH] = 4.0;
 
-            const double d = force.CalculateDistanceBetweenCapsules(node_a, node_b);
-
             double contact_dist_a;
             double contact_dist_b;
             c_vector<double, 2> vec_a_to_b;
 
-            force.CalculateForceDirectionAndContactPoints(node_a, node_b, d, vec_a_to_b, contact_dist_a, contact_dist_b);
+            force.CalculateForceDirectionAndContactPoints(node_a, node_b, vec_a_to_b, contact_dist_a, contact_dist_b);
 
             TS_ASSERT_DELTA(contact_dist_a, 0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);
@@ -478,7 +576,7 @@ public:
             TS_ASSERT_DELTA(vec_a_to_b[1], -1.0, 1e-6);
 
             // Swap a->b for coverage
-            force.CalculateForceDirectionAndContactPoints(node_b, node_a, d, vec_a_to_b, contact_dist_b, contact_dist_a);
+            force.CalculateForceDirectionAndContactPoints(node_b, node_a, vec_a_to_b, contact_dist_b, contact_dist_a);
 
             TS_ASSERT_DELTA(contact_dist_a, 0.5 * attributes_a[NA_LENGTH], 1e-6);
             TS_ASSERT_DELTA(contact_dist_b, -8.0 / 5.0, 1e-6);

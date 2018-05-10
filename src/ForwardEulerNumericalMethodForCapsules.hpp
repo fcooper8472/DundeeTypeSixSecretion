@@ -42,8 +42,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractNumericalMethod.hpp"
 
 /**
- * Implements forward Euler time stepping specific for Capsules, where the position and angle are both updated each
- * time step.
+ * Implements forward Euler time stepping specific for Capsules,
+ * where the position and angle are both updated each time step.
  */
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class ForwardEulerNumericalMethodForCapsules : public AbstractNumericalMethod<ELEMENT_DIM,SPACE_DIM> {
