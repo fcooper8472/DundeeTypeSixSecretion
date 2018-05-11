@@ -98,6 +98,7 @@ public:
 		// Create cell population
 		NodeBasedCellPopulation<2> population(mesh, cells);
 
+		population.AddCellWriter<CellIdWriter>();
 		population.AddCellWriter<CapsuleOrientationWriter>();
 		population.AddCellWriter<CapsuleScalingWriter>();
 
@@ -193,6 +194,7 @@ public:
 		// Create cell population
 		NodeBasedCellPopulation<3> population(mesh, cells);
 
+		population.AddCellWriter<CellIdWriter>();
 		population.AddCellWriter<CapsuleOrientationWriter>();
 		population.AddCellWriter<CapsuleScalingWriter>();
 
@@ -218,7 +220,7 @@ public:
 	}
 
 
-	void TestLongerCapsuleSimulation() throw (Exception)
+	void xTestLongerCapsuleSimulation() throw (Exception)
     {
 		EXIT_IF_PARALLEL;
 
@@ -282,6 +284,7 @@ public:
 		 // Create cell population
 		 NodeBasedCellPopulation<2> population(mesh, cells);
 
+		 population.AddCellWriter<CellIdWriter>();
 		 population.AddCellWriter<CapsuleOrientationWriter>();
 		 population.AddCellWriter<CapsuleScalingWriter>();
 
@@ -419,7 +422,7 @@ public:
     }
 
 
-	void xTestMachineUpdateAtDivision() throw (Exception)
+	void TestMachineUpdateAtDivision2d() throw (Exception)
 	{
 		EXIT_IF_PARALLEL;
 
@@ -488,7 +491,7 @@ public:
 
 		// Create simulation
 		OffLatticeSimulation<2> simulator(population);
-		simulator.SetOutputDirectory("TestMachineUpdateAtDivision");
+		simulator.SetOutputDirectory("TestMachineUpdateAtDivision2d");
 		double dt = 1.0/1200.0;
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(10);
@@ -502,7 +505,7 @@ public:
 		//
 
 		MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
-		p_modifier->SetOutputDirectory("TestMachineUpdateAtDivision");
+		p_modifier->SetOutputDirectory("TestMachineUpdateAtDivision2d");
 		p_modifier->Setk_1(0.0);
 		simulator.AddSimulationModifier(p_modifier);
 
@@ -521,7 +524,115 @@ public:
 		TS_ASSERT_EQUALS(num_machines2,2u);
 
 		PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
-		   }
+	}
+
+	void TestMachineUpdateAtDivision3d() throw (Exception)
+	{
+		EXIT_IF_PARALLEL;
+
+		//const unsigned num_nodes = 1u;
+		//auto p_rand_gen = RandomNumberGenerator::Instance();
+
+		// Create some capsules
+		std::vector<Node<3>*> nodes;
+		nodes.push_back(new Node<3>(0u, Create_c_vector(5.0, 5.0, 0.0)));
+
+		/*
+		 * We then convert this list of nodes to a `NodesOnlyMesh`,
+		 * which doesn't do very much apart from keep track of the nodes.
+		 */
+		NodesOnlyMesh<3> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, 100.0);
+		c_vector<double, 6> domain_size;
+		domain_size[0] = -1000.0;
+		domain_size[1] = 1000.0;
+		domain_size[2] = -1000.0;
+		domain_size[3] = 1000.0;
+		domain_size[4] = -1000.0;
+		domain_size[5] = 1000.0;
+		mesh.SetInitialBoxCollection(domain_size, 10.0);
+
+		mesh.GetNode(0u)->AddNodeAttribute(0.0);
+		mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+		mesh.GetNode(0u)->rGetNodeAttributes()[NA_THETA] = 0.0;
+		mesh.GetNode(0u)->rGetNodeAttributes()[NA_PHI] = M_PI/2.0;
+		mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+		mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+		// Create cells
+		std::vector<CellPtr> cells;
+		MAKE_PTR(WildTypeCellMutationState, p_state);
+		MAKE_PTR(TransitCellProliferativeType, p_type);
+		for (unsigned i=0; i<mesh.GetNumNodes(); i++)
+		{
+			UniformCellCycleModel* p_model = new UniformCellCycleModel();
+			p_model->SetMinCellCycleDuration(1.0);
+			p_model->SetMaxCellCycleDuration(1.01);
+			CellPtr p_cell(new Cell(p_state, p_model));
+			p_cell->SetCellProliferativeType(p_type);
+
+			double angle_1 = 0;
+			double angle_2 = M_PI;
+
+			MAKE_PTR(TypeSixMachineProperty, p_property);
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_1));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_2));
+
+
+			p_cell->AddCellProperty(p_property);
+			p_cell->SetBirthTime(-0.9);
+			mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
+
+			cells.push_back(p_cell);
+		}
+
+		// Create cell population
+		NodeBasedCellPopulationWithCapsules<3> population(mesh, cells);
+
+		population.AddCellWriter<CellIdWriter>();
+		population.AddCellWriter<CapsuleOrientationWriter>();
+		population.AddCellWriter<CapsuleScalingWriter>();
+		//population.AddCellWriter<MachineStateCountWriter>();
+
+		boost::shared_ptr<AbstractCentreBasedDivisionRule<3,3> > p_division_rule(new CapsuleBasedDivisionRule<3,3>());
+		population.SetCentreBasedDivisionRule(p_division_rule);
+
+		// Create simulation
+		OffLatticeSimulation<3> simulator(population);
+		simulator.SetOutputDirectory("TestMachineUpdateAtDivision3d");
+		double dt = 1.0/1200.0;
+		simulator.SetDt(dt);
+		simulator.SetSamplingTimestepMultiple(10);
+
+		auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<3,3>>();
+		simulator.SetNumericalMethod(p_numerical_method);
+
+
+		auto p_capsule_force = boost::make_shared<CapsuleForce<3>>();
+		simulator.AddForce(p_capsule_force);
+		//
+
+		MAKE_PTR(TypeSixMachineModifier<3>, p_modifier);
+		p_modifier->SetOutputDirectory("TestMachineUpdateAtDivision3d");
+		p_modifier->Setk_1(0.0);
+		simulator.AddSimulationModifier(p_modifier);
+
+
+		unsigned num_machines=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+
+		TS_ASSERT_EQUALS(num_machines,2u);
+
+		/* We then set an end time and run the simulation */
+		simulator.SetEndTime(1.0); // was 1.0075
+
+		simulator.Solve();
+
+//		unsigned num_machines2=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+//
+//		TS_ASSERT_EQUALS(num_machines2,2u);
+//
+//		PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
+	}
 
 
 	void xTestMachineUpdateAfterDivision() throw (Exception)

@@ -1,3 +1,4 @@
+TestCapsuleBasedDivisionRules.hpp
 TestCapsuleForce.hpp
 TestCapsuleNodeAttributes.hpp
 TestCapsuleSimulation.hpp

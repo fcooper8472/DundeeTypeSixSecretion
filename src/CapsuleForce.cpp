@@ -79,15 +79,6 @@ double CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPo
 		angle_phi_a = rNodeA.rGetNodeAttributes()[NA_PHI];
 		angle_phi_b = rNodeB.rGetNodeAttributes()[NA_PHI];
 	}
-	else if(SPACE_DIM==2u)
-	{
-		angle_phi_a = M_PI/2.0;
-		angle_phi_b = M_PI/2.0;
-	}
-	else
-	{
-		NEVER_REACHED;
-	}
 
 	c_vector<double,SPACE_DIM> segment_a_point_1;
 	c_vector<double,SPACE_DIM> segment_a_point_2;
@@ -330,6 +321,10 @@ void CapsuleForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopul
          ++iter)
     {
         iter->rGetNodeAttributes()[NA_APPLIED_THETA] = 0.0;
+        if (SPACE_DIM==3u)
+        {
+        	iter->rGetNodeAttributes()[NA_APPLIED_PHI] = 0.0;
+        }
     }
 
     // Calculate force and applied angle contributions from each pair
