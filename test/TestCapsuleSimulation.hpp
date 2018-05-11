@@ -218,8 +218,8 @@ public:
 	}
 
 
-	void xTestLongerCapsuleSimulation() throw (Exception)
-    		{
+	void TestLongerCapsuleSimulation() throw (Exception)
+    {
 		EXIT_IF_PARALLEL;
 
 		const unsigned num_nodes = 20u;
@@ -287,7 +287,7 @@ public:
 
 		 // Create simulation
 		 OffLatticeSimulation<2> simulator(population);
-		 simulator.SetOutputDirectory("TestLongerCapsuleSimulation");
+		 simulator.SetOutputDirectory("TestLongerCapsuleSimulation2d");
 		 simulator.SetDt(1.0/1200.0);
 		 simulator.SetSamplingTimestepMultiple(1u);
 
