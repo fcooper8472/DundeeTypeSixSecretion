@@ -38,57 +38,32 @@ private:
     }
 
     /**
-     * Calculate the shortest distance between two capsules.
-     * @param rNodeA the node at the centre of mass of the first capsule
-     * @param rNodeB the node at the centre of mass of the second capsule
-     * @return the shortest distance
-     */
-    double CalculateDistanceBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB);
-
-    /**
      * Calculate the overlap between two capsules. This is the sum of the radii minus the shortest distance between
      * the capsules.
      * @param rNodeA the node at the centre of mass of the first capsule
      * @param rNodeB the node at the centre of mass of the second capsule
-     * @param shortestDistance the shortest distance between the two capsules
+     * @param rShortestDistance the distance between the line segments.
+     *
      * @return the overlap
      */
-    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double shortestDistance);
-
-    /**
-     * Calculate the direction of the shortest vector between two capsules, the magnitude of their overlap, and the
-     * distance along the rod from each capsule's centre of mass to the point at which any force would act.
-     *
-     * @param rNodeA the node at the centre of mass of the first capsule
-     * @param rNodeB the node at the centre of mass of the second capsule
-     * @param rForceDirection filled in as a unit vector in the direction of the force from capsule A to B
-     * @param rOverlap filled in as the overlap between capsules: sum of their radii minus the shortest distance between
-     * @param rContactDistA filled in as the distance from the centre of mass of capsule A to the force contact point
-     * @param rContactDistB filled in as the distance from the centre of mass of capsule B to the force contact point
-     */
-    void CalculateForceAttributes(Node<SPACE_DIM>& rNodeA,
-                                  Node<SPACE_DIM>& rNodeB,
-                                  c_vector<double, SPACE_DIM>& rForceDirection,
-                                  double& rOverlap,
-                                  double& rContactDistA,
-                                  double& rContactDistB);
+    double CalculateOverlapBetweenCapsules(Node<SPACE_DIM>& rNodeA, Node<SPACE_DIM>& rNodeB, const double& rShortestDistance);
 
     /**
      * Calculate the direction of the force between two overlapping capsules, and the distance along the rod from each
      * capsule's centre of mass to the point at which the force will act.
      * @param rNodeA the node at the centre of mass of the first capsule
      * @param rNodeB the node at the centre of mass of the second capsule
-     * @param shortestDistance the shortest distance between the two capsules
      * @param rVecAToB filled in as a unit vector from the contact point on capsule A to that on capsule B
      * @param rContactDistA filled in as the distance from the centre of mass of capsule A to contact point
      * @param rContactDistB filled in as the distance from the centre of mass of capsule B to contact point
+     *
+     * @return The overlap between the two capsules.
      */
-    void CalculateForceDirectionAndContactPoints(Node<SPACE_DIM>& rNodeA,
-                                                 Node<SPACE_DIM>& rNodeB,
-                                                 const double shortestDistance,
-                                                 c_vector<double, SPACE_DIM>& rVecAToB,
-                                                 double& rContactDistA,
-                                                 double& rContactDistB);
+    double CalculateForceDirectionAndContactPoints(Node<SPACE_DIM>& rNodeA,
+                                                   Node<SPACE_DIM>& rNodeB,
+                                                   c_vector<double, SPACE_DIM>& rVecAToB,
+                                                   double& rContactDistA,
+                                                   double& rContactDistB);
 
     /**
      * Calculate the magnitude of the repulsion force given the overlap and capsule radii

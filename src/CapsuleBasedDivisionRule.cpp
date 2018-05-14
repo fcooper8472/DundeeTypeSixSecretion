@@ -9,6 +9,7 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
 
     switch (SPACE_DIM)
     {
+
         case 1:
         {
             EXCEPTION("CapsuleBasedDivisionRule is not implemented for SPACE_DIM==1");
@@ -17,18 +18,25 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
         {
         	Node<SPACE_DIM>* p_node = rCellPopulation.GetNodeCorrespondingToCell(pParentCell);
 
-        	const double orientation_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
-        	//const double distance = 0.25*p_node->rGetNodeAttributes()[NA_LENGTH] + 0.5*p_node->rGetNodeAttributes()[NA_RADIUS];
-        	//const double distance = 0.5*p_node->rGetNodeAttributes()[NA_LENGTH] + p_node->rGetNodeAttributes()[NA_RADIUS];
+   	        const double orientation_theta = p_node->rGetNodeAttributes()[NA_THETA];
+
         	const double distance=1.5;
-            axis_vector(0) = distance*cos(orientation_angle);
-            axis_vector(1) = distance*sin(orientation_angle);
+            axis_vector(0) = distance*cos(orientation_theta);
+            axis_vector(1) = distance*sin(orientation_theta);
             break;
         }
         case 3:
         {
-            EXCEPTION("CapsuleBasedDivisionRule is not implemented for SPACE_DIM==3");
+        	Node<SPACE_DIM>* p_node = rCellPopulation.GetNodeCorrespondingToCell(pParentCell);
 
+   	        const double orientation_theta = p_node->rGetNodeAttributes()[NA_THETA];
+   	        const double orientation_phi = p_node->rGetNodeAttributes()[NA_PHI];
+
+        	const double distance=1.5;
+            axis_vector(0) = distance*cos(orientation_theta)*sin(orientation_phi);
+            axis_vector(1) = distance*sin(orientation_theta)*sin(orientation_phi);
+            axis_vector(2) = distance*cos(orientation_phi);
+            break;
         }
         default:
             NEVER_REACHED;
@@ -36,8 +44,6 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > CapsuleBase
 
     c_vector<double, SPACE_DIM> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - axis_vector;
     c_vector<double, SPACE_DIM> daughter_position = parent_position + 2.0*axis_vector;
-
-
 
     std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > positions(parent_position, daughter_position);
     return positions;

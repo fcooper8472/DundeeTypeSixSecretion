@@ -63,85 +63,60 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNodePositions(double dt)
 {
 
-	  NodeBasedCellPopulation<SPACE_DIM>* p_node_population= dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
+	NodeBasedCellPopulation<SPACE_DIM>* p_node_population= dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
 
 
 	for (auto cell_iter = p_node_population->Begin();
-			   cell_iter != p_node_population->End();
-			   ++cell_iter)
+			cell_iter != p_node_population->End();
+			++cell_iter)
+	{
+		//if (bool(dynamic_cast<AbstractSimpleCellCycleModel*>(cell_iter->GetCellCycleModel())))
+		{
+			if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 			{
 
-				  //if (bool(dynamic_cast<AbstractSimpleCellCycleModel*>(cell_iter->GetCellCycleModel())))
-				  {
+				double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
+
+				UniformCellCycleModel* p_model = (static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel()));
+
+				const double cell_cycle_time =  p_model->GetCellCycleDuration() ;
+
+				double initial_length = 2.0;
 
 
-                      if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
-					  {
-
-                    	      double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
-
-                    		    UniformCellCycleModel* p_model = (static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel()));
-
-                    		     const double cell_cycle_time =  p_model->GetCellCycleDuration() ;
-
-								 double initial_length = 2.0;
+				Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
 
 
-								  Node<SPACE_DIM>* pNodeA = p_node_population->GetNodeCorrespondingToCell(*cell_iter);
+				double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+
+				double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+				//double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
 
 
-								  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+				pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
 
-								  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
-								  //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
-
-
-								  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
-
-					  }
-
-
-
-
-
-				  }
 			}
+		}
+	}
 
 
+	// Apply forces to each cell, and save a vector of net forces F
+	this->ComputeForcesIncludingDamping();
 
+	for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
+			node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
+			++node_iter)
+	{
+		double radius = node_iter->rGetNodeAttributes()[NA_RADIUS];
+		double length = node_iter->rGetNodeAttributes()[NA_LENGTH];
 
-    // Apply forces to each cell, and save a vector of net forces F
-    this->ComputeForcesIncludingDamping();
-
-    for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
-         node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
-         ++node_iter)
-    {
-        double radius = node_iter->rGetNodeAttributes()[NA_RADIUS];
-        double length = node_iter->rGetNodeAttributes()[NA_LENGTH];
-
-        node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce() / CalculateMassOfCapsule(length, radius);
-        node_iter->rGetNodeAttributes()[NA_ANGLE] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_ANGLE] / CalculateMomentOfInertiaOfCapsule(length, radius);
-    }
-
-//    auto p_rand_gen = RandomNumberGenerator::Instance();
-//
-//    for (auto node_iter = this->mpCellPopulation->rGetMesh().GetNodeIteratorBegin();
-//         node_iter != this->mpCellPopulation->rGetMesh().GetNodeIteratorEnd();
-//         ++node_iter)
-//    {
-//        double angle = node_iter->rGetNodeAttributes()[NA_ANGLE];
-//
-//        // Move a random amount
-//        auto random_movement = Create_c_vector(cos(angle), sin(angle));
-//        random_movement *= p_rand_gen->NormalRandomDeviate(0.01, 0.005);
-//
-//        // Rotate a random amount
-////        double random_rotation = p_rand_gen->NormalRandomDeviate(0.0, 0.005 * M_PI);
-//
-//        node_iter->rGetModifiableLocation() += random_movement;
-////        node_iter->rGetNodeAttributes()[NA_ANGLE] += random_rotation;
-//    }
+		node_iter->rGetModifiableLocation() += dt * node_iter->rGetAppliedForce() / CalculateMassOfCapsule(length, radius);
+		node_iter->rGetNodeAttributes()[NA_THETA] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_THETA] / CalculateMomentOfInertiaOfCapsule(length, radius);
+		if (SPACE_DIM==3u)
+		{
+			node_iter->rGetNodeAttributes()[NA_PHI] += dt * node_iter->rGetNodeAttributes()[NA_APPLIED_PHI] / CalculateMomentOfInertiaOfCapsule(length, radius);
+		}
+	}
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

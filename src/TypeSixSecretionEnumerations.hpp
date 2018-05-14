@@ -41,10 +41,12 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 enum NodeAttributeVectorPositions : std::size_t
 {
-    NA_ANGLE,
+    NA_THETA, // For 2D and 3D
+    NA_PHI,   // For 3D
     NA_LENGTH,
     NA_RADIUS,
-    NA_APPLIED_ANGLE,
+    NA_APPLIED_THETA, // For 2D and 3D
+    NA_APPLIED_PHI, // For 3D
     NA_VEC_LENGTH
 };
 

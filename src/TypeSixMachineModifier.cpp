@@ -16,7 +16,15 @@
 template<unsigned DIM>
 TypeSixMachineModifier<DIM>::TypeSixMachineModifier()
     : AbstractCellBasedSimulationModifier<DIM>(),
-      mOutputDirectory(""),mk_1(0.4),mk_2(0.0),mk_3(1.1),mk_4(0.0),mk_5(1.1),mk_6(0.0),mk_7(1.1),mStateFire(3u)
+      mOutputDirectory(""),
+	  mk_1(0.4),
+	  mk_2(0.0),
+	  mk_3(1.1),
+	  mk_4(0.0),
+	  mk_5(1.1),
+	  mk_6(0.0),
+	  mk_7(1.1),
+	  mStateFire(3u)
 {
 }
 

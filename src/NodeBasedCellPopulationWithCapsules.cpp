@@ -67,45 +67,45 @@ void NodeBasedCellPopulationWithCapsules<DIM>::UpdateNodeLocations(double dt)
 {
 
 	// Update cell lengths
-		// Iterate over cell population
+    // Iterate over cell population
 
-		for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->Begin();
-		   cell_iter != this->End();
-		   ++cell_iter)
-		{
-
-
-			  double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
-			  double initial_length = 2.0;
-
-			  if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
-			  {
-				  double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
-
-				  //if (cell_age >= cell_cycle_time)
-				  //{
-				//	  cell_age=0.0;
-				//	  std::cout<< "Ahh " << "\n";
-				 // }
+    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->Begin();
+       cell_iter != this->End();
+       ++cell_iter)
+    {
 
 
-				  //assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&mrCellPopulation)));
-				  //Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
+          double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
+          double initial_length = 2.0;
 
-				  Node<DIM>* pNodeA = this->GetNodeCorrespondingToCell(*cell_iter);
-				  double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
-				  double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
-				  //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+          if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
+          {
+              double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
 
-
-				  pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
-
-
-			  }
-		}
+              //if (cell_age >= cell_cycle_time)
+              //{
+            //	  cell_age=0.0;
+            //	  std::cout<< "Ahh " << "\n";
+             // }
 
 
-		NodeBasedCellPopulation<DIM>::UpdateNodeLocations(dt);
+              //assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&mrCellPopulation)));
+              //Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
+
+              Node<DIM>* pNodeA = this->GetNodeCorrespondingToCell(*cell_iter);
+              double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+              double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+              //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+
+
+              pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+
+
+          }
+    }
+
+
+    NodeBasedCellPopulation<DIM>::UpdateNodeLocations(dt);
 }
 
 template<unsigned DIM>
@@ -115,22 +115,22 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	auto pNewCellTemp=NodeBasedCellPopulation<DIM>::AddCell(pNewCell, pParentCell);
 
 	// Get new node
-		    Node<DIM>* p_new_node = this->GetNodeCorrespondingToCell(pNewCellTemp);// new Node<DIM>(this->GetNumNodes(), daughter_position, false); // never on boundary
+	Node<DIM>* p_new_node = this->GetNodeCorrespondingToCell(pNewCellTemp);// new Node<DIM>(this->GetNumNodes(), daughter_position, false); // never on boundary
 
-		    p_new_node->AddNodeAttribute(0.0);
-		    p_new_node->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+	p_new_node->AddNodeAttribute(0.0);
+	p_new_node->rGetNodeAttributes().resize(NA_VEC_LENGTH);
 
-		    double angle = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_ANGLE];
-		    angle = angle + 0.001*(RandomNumberGenerator::Instance()->ranf()-0.5)*2*M_PI;
-
-
-		    double length = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_LENGTH];
-		    double radius = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_RADIUS];
+	double angle = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_THETA];
+	angle = angle + 0.001*(RandomNumberGenerator::Instance()->ranf()-0.5)*2*M_PI;
 
 
-		    p_new_node->rGetNodeAttributes()[NA_ANGLE] =  angle;
-		    p_new_node->rGetNodeAttributes()[NA_LENGTH] = length;
-		    p_new_node->rGetNodeAttributes()[NA_RADIUS] = radius;
+	double length = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_LENGTH];
+	double radius = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_RADIUS];
+
+
+	p_new_node->rGetNodeAttributes()[NA_THETA] =  angle;
+	p_new_node->rGetNodeAttributes()[NA_LENGTH] = length;
+	p_new_node->rGetNodeAttributes()[NA_RADIUS] = radius;
 
 
     // Get this cell's type six machine property data
@@ -218,61 +218,55 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	r_parent_data=new_parent_data;
 	r_daughter_data=new_daughter_data;
 
-
-
-
-
     return pNewCellTemp;
-
-
 
 }
 
 template<unsigned DIM>
 c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords(unsigned node_index,double theta,c_vector<double,DIM> cell_centre,double L)
 {
-		Node<DIM>* p_node = this->GetNode(node_index);
-		double cell_angle = p_node->rGetNodeAttributes()[NA_ANGLE];
-		double R = p_node->rGetNodeAttributes()[NA_RADIUS];
+    Node<DIM>* p_node = this->GetNode(node_index);
+    double cell_angle = p_node->rGetNodeAttributes()[NA_THETA];
+    double R = p_node->rGetNodeAttributes()[NA_RADIUS];
 
 
-		// compute angle that defines end of the axis and beginning of hemisphere
-		double theta_c = atan2(R, 0.5*L);
+    // compute angle that defines end of the axis and beginning of hemisphere
+    double theta_c = atan2(R, 0.5*L);
 
 
-		double x_in_cell_frame = DOUBLE_UNSET;
-		double y_in_cell_frame = DOUBLE_UNSET;
-		//if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on upper body axis
-		if (theta > theta_c && theta < M_PI-theta_c) // machine lies on upper body axis
-		{
-			x_in_cell_frame = R/tan(theta);
-			y_in_cell_frame = R;
-		}
-		//else if (fabs(theta + 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on lower body axis
-		else if (theta < -theta_c && theta > -M_PI+theta_c) // machine lies on upper body axis
-		{
-			x_in_cell_frame = -R/tan(theta);
-			y_in_cell_frame = -R;
-		}
-		else if (fabs(theta) < theta_c) // machine lies on right hemisphere
-		{
-			x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-			y_in_cell_frame = x_in_cell_frame*tan(theta);
-		}
-		else
-		{
-			x_in_cell_frame = (-L-sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-			y_in_cell_frame = x_in_cell_frame*tan(theta);
-		}
+    double x_in_cell_frame = DOUBLE_UNSET;
+    double y_in_cell_frame = DOUBLE_UNSET;
+    //if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on upper body axis
+    if (theta > theta_c && theta < M_PI-theta_c) // machine lies on upper body axis
+    {
+        x_in_cell_frame = R/tan(theta);
+        y_in_cell_frame = R;
+    }
+    //else if (fabs(theta + 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on lower body axis
+    else if (theta < -theta_c && theta > -M_PI+theta_c) // machine lies on upper body axis
+    {
+        x_in_cell_frame = -R/tan(theta);
+        y_in_cell_frame = -R;
+    }
+    else if (fabs(theta) < theta_c) // machine lies on right hemisphere
+    {
+        x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
+        y_in_cell_frame = x_in_cell_frame*tan(theta);
+    }
+    else
+    {
+        x_in_cell_frame = (-L-sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
+        y_in_cell_frame = x_in_cell_frame*tan(theta);
+    }
 
-		 // Compute and store the coordinates of this machine
-		 c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
-		 machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
-		 machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
+    // Compute and store the coordinates of this machine
+    c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
+    machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
+    machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
 
-		 return machine_coords;
+    return machine_coords;
 
- }
+}
 
 template<unsigned DIM>
 std::vector<unsigned> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineData(CellPtr pCell)

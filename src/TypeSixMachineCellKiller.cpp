@@ -82,8 +82,7 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
                     Node<DIM>* p_neighbour = p_population->GetNode(*it);
                     
                     // Compute distance between (X,Y) and this neighbouring cell's line segment
-                    auto neighbour_location = p_neighbour->rGetLocation();
-				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_ANGLE];
+				    const double neighbour_angle = p_neighbour->rGetNodeAttributes()[NA_THETA];
 				    const double neighbour_length = p_neighbour->rGetNodeAttributes()[NA_LENGTH];
 
 		            double R = p_neighbour->rGetNodeAttributes()[NA_RADIUS];
@@ -91,11 +90,11 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 				
 				    geom_point machine_point(machine_coords[0], machine_coords[1]);
 								
-				    geom_point neighbour_end_1(neighbour_location[0] + 0.5 * neighbour_length * cos(neighbour_angle),
-				                               neighbour_location[1] + 0.5 * neighbour_length * sin(neighbour_angle));
+				    geom_point neighbour_end_1(p_neighbour->rGetLocation()[0] + 0.5 * neighbour_length * cos(neighbour_angle),
+				    						   p_neighbour->rGetLocation()[1] + 0.5 * neighbour_length * sin(neighbour_angle));
 				
-				    geom_point neighbour_end_2(neighbour_location[0] - 0.5 * neighbour_length * cos(neighbour_angle),
-				                               neighbour_location[1] - 0.5 * neighbour_length * sin(neighbour_angle));
+				    geom_point neighbour_end_2(p_neighbour->rGetLocation()[0] - 0.5 * neighbour_length * cos(neighbour_angle),
+				    						   p_neighbour->rGetLocation()[1] - 0.5 * neighbour_length * sin(neighbour_angle));
 				
 				    geom_segment neighbour_axis(neighbour_end_1, neighbour_end_2);
 				
