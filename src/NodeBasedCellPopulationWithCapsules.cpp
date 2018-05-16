@@ -62,56 +62,57 @@ NodeBasedCellPopulationWithCapsules<DIM>::NodeBasedCellPopulationWithCapsules(No
     // No Validate() because the cells are not associated with the cell population yet in archiving
 }
 
-template<unsigned DIM>
-void NodeBasedCellPopulationWithCapsules<DIM>::UpdateNodeLocations(double dt)
-{
-
-	// Update cell lengths
-    // Iterate over cell population
-
-    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->Begin();
-       cell_iter != this->End();
-       ++cell_iter)
-    {
-
-
-          double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
-          double initial_length = 2.0;
-
-          if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
-          {
-              double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
-
-              //if (cell_age >= cell_cycle_time)
-              //{
-            //	  cell_age=0.0;
-            //	  std::cout<< "Ahh " << "\n";
-             // }
-
-
-              //assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&mrCellPopulation)));
-              //Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
-
-              Node<DIM>* pNodeA = this->GetNodeCorrespondingToCell(*cell_iter);
-              double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
-              double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
-              //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
-
-
-              pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
-
-
-          }
-    }
-
-
-    NodeBasedCellPopulation<DIM>::UpdateNodeLocations(dt);
-}
+//template<unsigned DIM>
+//void NodeBasedCellPopulationWithCapsules<DIM>::UpdateNodeLocations(double dt)
+//{
+//	MARK;
+//
+//	// Update cell lengths
+//    // Iterate over cell population
+//
+//    for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = this->Begin();
+//       cell_iter != this->End();
+//       ++cell_iter)
+//    {
+//
+//
+//          double cell_age  = cell_iter->GetAge();//+SimulationTime::Instance()->GetTimeStep();
+//          double initial_length = 2.0;
+//
+//          if (bool(dynamic_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())))
+//          {
+//              double cell_cycle_time = static_cast<UniformCellCycleModel*>(cell_iter->GetCellCycleModel())->GetCellCycleDuration();
+//
+//              //if (cell_age >= cell_cycle_time)
+//              //{
+//            //	  cell_age=0.0;
+//            //	  std::cout<< "Ahh " << "\n";
+//             // }
+//
+//
+//              //assert(bool(dynamic_cast<NodeBasedCellPopulation<DIM>*>(&mrCellPopulation)));
+//              //Node<DIM>* pNodeA = dynamic_cast<NodeBasedCellPopulation<DIM>*>(&rCellPopulation)->GetNodeCorrespondingToCell(*cell_iter);
+//
+//              Node<DIM>* pNodeA = this->GetNodeCorrespondingToCell(*cell_iter);
+//              double division_length = 2*initial_length + 2*pNodeA->rGetNodeAttributes()[NA_RADIUS];
+//              double new_length = initial_length + (division_length - initial_length)*cell_age/cell_cycle_time;
+//              //double new_length = initial_length*(1.0+cell_age/cell_cycle_time);
+//
+//
+//              pNodeA->rGetNodeAttributes()[NA_LENGTH] = new_length;
+//
+//
+//          }
+//    }
+//
+//
+//    NodeBasedCellPopulation<DIM>::UpdateNodeLocations(dt);
+//}
 
 template<unsigned DIM>
 CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, CellPtr pParentCell)
 {
-
+	MARK;
 
 	auto pNewCellTemp=NodeBasedCellPopulation<DIM>::AddCell(pNewCell, pParentCell);
 
@@ -120,6 +121,7 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 	p_new_node->AddNodeAttribute(0.0);
 	p_new_node->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+	PRINT_VARIABLE(NA_VEC_LENGTH);
 
 	double angle = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_THETA];
 	angle = angle + 0.001*(RandomNumberGenerator::Instance()->ranf()-0.5)*2*M_PI;
@@ -128,8 +130,18 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	double length = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_LENGTH];
 	double radius = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_RADIUS];
 
-
 	p_new_node->rGetNodeAttributes()[NA_THETA] =  angle;
+
+
+	if (DIM==3)
+	{
+		double phi = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_PHI];
+		p_new_node->rGetNodeAttributes()[NA_PHI] =  phi;
+
+
+	}
+
+
 	p_new_node->rGetNodeAttributes()[NA_LENGTH] = length;
 	p_new_node->rGetNodeAttributes()[NA_RADIUS] = radius;
 
@@ -233,7 +245,7 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	r_parent_data=new_parent_data;
 	r_daughter_data=new_daughter_data;
 
-
+	MARK;
     return pNewCellTemp;
 
 }

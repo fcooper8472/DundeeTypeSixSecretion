@@ -65,7 +65,6 @@ void ForwardEulerNumericalMethodForCapsules<ELEMENT_DIM,SPACE_DIM>::UpdateAllNod
 
 	NodeBasedCellPopulation<SPACE_DIM>* p_node_population= dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation);
 
-
 	for (auto cell_iter = p_node_population->Begin();
 			cell_iter != p_node_population->End();
 			++cell_iter)

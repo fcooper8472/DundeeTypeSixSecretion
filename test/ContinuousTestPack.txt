@@ -1,7 +1,8 @@
 TestCapsuleBasedDivisionRules.hpp
 TestCapsuleForce.hpp
 TestCapsuleNodeAttributes.hpp
-TestCapsuleSimulation.hpp
+TestCapsuleSimulation2d.hpp
+TestCapsuleSimulation3d.hpp
 TestNumericalMethodForCapsules.hpp
 TestTypeSixMachineCellKiller.hpp
 TestTypeSixMachineModifier.hpp

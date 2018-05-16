@@ -67,6 +67,7 @@ c_vector<double, SPACE_DIM> CapsuleOrientationWriter<ELEMENT_DIM, SPACE_DIM>::Ge
         	orientation[0] = cos(theta)*sin(phi);
         	orientation[1] = sin(theta)*sin(phi);
         	orientation[2] = cos(phi);
+
         }
         else
         {
@@ -93,6 +94,7 @@ void CapsuleOrientationWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(
     {
         *this->mpOutStream << cell_location[i] << " ";
     }
+
 
     for (unsigned i=0; i<SPACE_DIM; i++)
     {
