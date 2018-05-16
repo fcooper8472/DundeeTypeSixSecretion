@@ -220,6 +220,8 @@ public:
 	}
 
 
+
+
 	void xTestLongerCapsuleSimulation() throw (Exception)
     {
 		EXIT_IF_PARALLEL;
@@ -312,7 +314,7 @@ public:
 		 simulator.Solve();
     }
 
-	void xTestSingleCapsuleSimulationWithDivision() throw (Exception)
+	void TestSingleCapsuleSimulationWithDivision() throw (Exception)
     {
 		EXIT_IF_PARALLEL;
 
@@ -382,7 +384,22 @@ public:
 			 UniformCellCycleModel* p_model = new UniformCellCycleModel();
 			 p_model->SetMinCellCycleDuration(1.0);
 			 p_model->SetMaxCellCycleDuration(1.6);
-			 CellPtr p_cell(new Cell(p_state, p_model));
+
+	            CellPtr p_cell(new Cell(p_state, p_model));
+
+
+			 double angle_1 = 0.0;
+
+			 std::vector<double> machine_angles1;
+			 machine_angles1.push_back(angle_1);
+
+
+			MAKE_PTR(TypeSixMachineProperty, p_property);
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
+
+
+	            p_cell->AddCellProperty(p_property);
+
 			 p_cell->SetCellProliferativeType(p_type);
 			 p_cell->SetBirthTime(-0.9);
 			 mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
@@ -401,7 +418,7 @@ public:
 
 		 // Create simulation
 		 OffLatticeSimulation<2> simulator(population);
-		 simulator.SetOutputDirectory("TestSingleCapsuleWithDivision");
+		 simulator.SetOutputDirectory("TestSingleCapsuleWithDivision2D");
 		 double dt = 1.0/1200.0;
 		 simulator.SetDt(dt);
 		 simulator.SetSamplingTimestepMultiple(10);
@@ -420,6 +437,109 @@ public:
 		 simulator.Solve();
 		 PRINT_VARIABLE(simulator.rGetCellPopulation().GetNumRealCells());
     }
+
+	void TestSingleCapsuleSimulationWithDivision3d() throw (Exception)
+	    {
+	        EXIT_IF_PARALLEL;
+
+	        //const unsigned num_nodes = 1u;
+	        //auto p_rand_gen = RandomNumberGenerator::Instance();
+
+	        // Create some capsules
+	        std::vector<Node<3>*> nodes;
+	        nodes.push_back(new Node<3>(0u, Create_c_vector(5.0, 5.0, 0.0)));
+
+	        /*
+	         * We then convert this list of nodes to a `NodesOnlyMesh`,
+	         * which doesn't do very much apart from keep track of the nodes.
+	         */
+	        NodesOnlyMesh<3> mesh;
+	        mesh.ConstructNodesWithoutMesh(nodes, 100.0);
+	        c_vector<double, 6> domain_size;
+	        domain_size[0] = -1000.0;
+	        domain_size[1] = 1000.0;
+	        domain_size[2] = -1000.0;
+	        domain_size[3] = 1000.0;
+	        domain_size[4] = -1000.0;
+	        domain_size[5] = 1000.0;
+	        mesh.SetInitialBoxCollection(domain_size, 10.0);
+
+	        mesh.GetNode(0u)->AddNodeAttribute(0.0);
+	        mesh.GetNode(0u)->rGetNodeAttributes().resize(NA_VEC_LENGTH);
+	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_THETA] = 0.0;
+	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_PHI] = M_PI/2.0;
+	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_LENGTH] = 2.0;
+	        mesh.GetNode(0u)->rGetNodeAttributes()[NA_RADIUS] = 0.5;
+
+	        // Create cells
+	        std::vector<CellPtr> cells;
+	        MAKE_PTR(WildTypeCellMutationState, p_state);
+	        MAKE_PTR(TransitCellProliferativeType, p_type);
+	        for (unsigned i=0; i<mesh.GetNumNodes(); i++)
+	        {
+	            UniformCellCycleModel* p_model = new UniformCellCycleModel();
+	            p_model->SetMinCellCycleDuration(1.0);
+	            p_model->SetMaxCellCycleDuration(1.01);
+	            CellPtr p_cell(new Cell(p_state, p_model));
+	            p_cell->SetCellProliferativeType(p_type);
+
+	            double angle_1 = 0;
+	            double angle_2 = M_PI;
+
+	            std::vector<double> machine_angles1;
+	            machine_angles1.push_back(angle_1);
+	            machine_angles1.push_back(angle_2);
+
+
+
+	            MAKE_PTR(TypeSixMachineProperty, p_property);
+	            p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
+
+
+	            p_cell->AddCellProperty(p_property);
+	            p_cell->SetBirthTime(-0.9);
+	            mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
+
+	            cells.push_back(p_cell);
+	        }
+
+	        // Create cell population
+	        NodeBasedCellPopulationWithCapsules<3> population(mesh, cells);
+
+	        population.AddCellWriter<CellIdWriter>();
+	        population.AddCellWriter<CapsuleOrientationWriter>();
+	        population.AddCellWriter<CapsuleScalingWriter>();
+	        //population.AddCellWriter<MachineStateCountWriter>();
+
+	        boost::shared_ptr<AbstractCentreBasedDivisionRule<3,3> > p_division_rule(new CapsuleBasedDivisionRule<3,3>());
+	        population.SetCentreBasedDivisionRule(p_division_rule);
+
+	        // Create simulation
+	        OffLatticeSimulation<3> simulator(population);
+	        simulator.SetOutputDirectory("TestWithCellDivision3d");
+	        double dt = 1.0/1200.0;
+	        simulator.SetDt(dt);
+	        simulator.SetSamplingTimestepMultiple(10);
+
+	        auto p_numerical_method = boost::make_shared<ForwardEulerNumericalMethodForCapsules<3,3>>();
+	        simulator.SetNumericalMethod(p_numerical_method);
+
+
+	        auto p_capsule_force = boost::make_shared<CapsuleForce<3>>();
+	        simulator.AddForce(p_capsule_force);
+	        //
+
+
+
+
+
+	        /* We then set an end time and run the simulation */
+	        simulator.SetEndTime(1.0); // was 1.0075
+
+	        simulator.Solve();
+	    }
+
+
 
 
 	void TestMachineUpdateAtDivision2d() throw (Exception)
@@ -466,9 +586,12 @@ public:
 			double angle_1 = 0;
 			double angle_2 = M_PI;
 
+			std::vector<double> machine_angles1;
+			machine_angles1.push_back(angle_1);
+
+
 			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_1));
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_2));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
 
 
 			p_cell->AddCellProperty(p_property);
@@ -574,9 +697,14 @@ public:
 			double angle_1 = 0;
 			double angle_2 = M_PI;
 
+			std::vector<double> machine_angles1;
+			machine_angles1.push_back(angle_1);
+            machine_angles1.push_back(angle_2);
+
+
+
 			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_1));
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_2));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
 
 
 			p_cell->AddCellProperty(p_property);
@@ -681,9 +809,15 @@ public:
 			double angle_1 = M_PI/4.0;
 			double angle_2 = -3.0*M_PI/4.0;
 
+			std::vector<double> machine_angles1;
+			machine_angles1.push_back(angle_1);
+
+			std::vector<double> machine_angles2;
+			machine_angles2.push_back(angle_2);
+
 			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_1));
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4, angle_2));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles2));
 
 
 			p_cell->AddCellProperty(p_property);
@@ -799,8 +933,11 @@ public:
 
 
 			double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
+
+			std::vector<double> machine_angles;
+			machine_angles.push_back(rand_angle);
 			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(4u, rand_angle));
+			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4u, machine_angles));
 			p_cell->AddCellProperty(p_property);
 
 			//double birth_time = -RandomNumberGenerator::Instance()->ranf();
@@ -928,8 +1065,10 @@ public:
 
 
 			 double rand_angle = M_PI/2.0;
+			 std::vector<double> machine_angles;
+			 machine_angles.push_back(rand_angle);
 			 MAKE_PTR(TypeSixMachineProperty, p_property);
-			 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1, rand_angle));
+			 p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1, machine_angles));
 			 p_cell->AddCellProperty(p_property);
 
 			 //double birth_time = -RandomNumberGenerator::Instance()->ranf();
@@ -1069,8 +1208,10 @@ public:
 
 
 			 double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
+			 std::vector<double> machine_angles;
+			 machine_angles.push_back(rand_angle);
 			 MAKE_PTR(TypeSixMachineProperty, p_property);
-			 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1u, rand_angle));
+			 p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1u, machine_angles));
 			 p_cell->AddCellProperty(p_property);
 
 			 //double birth_time = -RandomNumberGenerator::Instance()->ranf();
@@ -1183,9 +1324,11 @@ public:
 
 
 			double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
-			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1u, rand_angle));
-			p_cell->AddCellProperty(p_property);
+			std::vector<double> machine_angles;
+             machine_angles.push_back(rand_angle);
+             MAKE_PTR(TypeSixMachineProperty, p_property);
+             p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1u, machine_angles));
+             p_cell->AddCellProperty(p_property);
 
 			//double birth_time = -RandomNumberGenerator::Instance()->ranf();
 			p_cell->SetBirthTime(-0.9);
@@ -1295,11 +1438,11 @@ public:
 
 
 
-			double rand_angle = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
-			MAKE_PTR(TypeSixMachineProperty, p_property);
-			p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1u, rand_angle));
-			//p_property->SetNumMachineFiresInThisTimeStep(0u);
-			p_cell->AddCellProperty(p_property);
+			std::vector<double> machine_angles;
+			             machine_angles.push_back(0.0);
+			             MAKE_PTR(TypeSixMachineProperty, p_property);
+			             p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1u, machine_angles));
+			             p_cell->AddCellProperty(p_property);
 
 			//double birth_time = -RandomNumberGenerator::Instance()->ranf();
 			p_cell->SetBirthTime(-0.9);
@@ -1430,9 +1573,11 @@ public:
 			 CellPtr p_cell(new Cell(p_state, p_model));
 			 p_cell->SetCellProliferativeType(p_type);
 
-			 MAKE_PTR(TypeSixMachineProperty, p_property);
-			 p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(1, 0.0));
-			 p_cell->AddCellProperty(p_property);
+			 std::vector<double> machine_angles;
+             machine_angles.push_back(0.0);
+             MAKE_PTR(TypeSixMachineProperty, p_property);
+             p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1u, machine_angles));
+             p_cell->AddCellProperty(p_property);
 
 			 //               double birth_time = -RandomNumberGenerator::Instance()->ranf();
 			 p_cell->SetBirthTime(0.0);

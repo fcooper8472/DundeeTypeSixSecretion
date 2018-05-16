@@ -18,7 +18,7 @@ class TypeSixMachineProperty : public AbstractCellProperty
 private:
 
     /** \todo Document member */
-    std::vector<std::pair<unsigned, double> > mMachineData;
+    std::vector<std::pair<unsigned, std::vector<double>> > mMachineData;
     unsigned mNumMachineFiresInThisTimeStep;
 
 
@@ -37,7 +37,7 @@ public:
     /**
      * @return #mMachineData
      */
-    std::vector<std::pair<unsigned, double> >& rGetMachineData();
+    std::vector<std::pair<unsigned, std::vector<double>> >& rGetMachineData();
 
 
     unsigned GetNumMachineFiresInThisTimeStep();

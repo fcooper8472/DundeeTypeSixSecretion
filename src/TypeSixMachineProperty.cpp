@@ -9,7 +9,7 @@ TypeSixMachineProperty::~TypeSixMachineProperty()
 {
 }
 
-std::vector<std::pair<unsigned, double> >& TypeSixMachineProperty::rGetMachineData()
+std::vector<std::pair<unsigned, std::vector<double>> >& TypeSixMachineProperty::rGetMachineData()
 {
     return mMachineData;
 }

@@ -112,6 +112,7 @@ template<unsigned DIM>
 CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, CellPtr pParentCell)
 {
 
+
 	auto pNewCellTemp=NodeBasedCellPopulation<DIM>::AddCell(pNewCell, pParentCell);
 
 	// Get new node
@@ -140,7 +141,7 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 		EXCEPTION("TypeSixMachineCellKiller cannot be used unless each cell has a TypeSixMachineProperty");
 	}
 	boost::shared_ptr<TypeSixMachineProperty> p_parent_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-	std::vector<std::pair<unsigned, double> >& r_parent_data = p_parent_property->rGetMachineData();
+	std::vector<std::pair<unsigned, std::vector<double>> >& r_parent_data = p_parent_property->rGetMachineData();
 
 
 
@@ -152,12 +153,12 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	p_property->SetNumMachineFiresInThisTimeStep(0u);
 
 	pNewCell->AddCellProperty(p_property);
-	std::vector<std::pair<unsigned, double> >& r_daughter_data = p_property->rGetMachineData();
+	std::vector<std::pair<unsigned, std::vector<double>> >& r_daughter_data = p_property->rGetMachineData();
 
 
 	// Create a new vector to store all pairs less any we might throw away
-	std::vector<std::pair<unsigned, double> > new_parent_data;
-	std::vector<std::pair<unsigned, double> > new_daughter_data;
+	std::vector<std::pair<unsigned, std::vector<double>> > new_parent_data;
+	std::vector<std::pair<unsigned, std::vector<double>> > new_daughter_data;
 
 	//new_data.reserve(r_data.size() + 1);
 
@@ -184,31 +185,45 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 
 			// retrieve machine coordinates in frame of old cell
-			double theta = r_pair.second;
+			std::vector<double> machine_angles = r_pair.second;
 
 
 			// use old parent cell coordinates to compute machine coordinates
-			c_vector<double, DIM> machine_coords = GetMachineCoords(parent_node_index, theta,old_cell_centre, p_parent_node->rGetNodeAttributes()[NA_LENGTH]);
-
-
+			c_vector<double, DIM> machine_coords = GetMachineCoords(parent_node_index, machine_angles,old_cell_centre, p_parent_node->rGetNodeAttributes()[NA_LENGTH]);
+;
+			double theta=machine_angles[0];
 
 			if (fabs(theta) < M_PI/2.0 ) // machine inherited by daughter cell
 			{
 
-				double new_theta = atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+	            std::vector<double> new_machine_angles; // = r_pair.second;
 
-				r_pair.second=new_theta;
-				new_daughter_data.emplace_back(std::pair<unsigned, double>(r_pair));
+				double new_theta = atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+				new_machine_angles.push_back(new_theta);
+				if (DIM >2)
+				{
+				    double new_phi =  0.0; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+				    new_machine_angles.push_back(new_phi);
+				}
+
+				r_pair.second=new_machine_angles;
+				new_daughter_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
 
 
 			}
 			else //machine moves to parent cell
 			{
+                std::vector<double> new_machine_angles; // = r_pair.second;
 
 				double new_theta = atan2(machine_coords[1]-parent_cell_centre[1], machine_coords[0]-parent_cell_centre[0]);
-
-				r_pair.second=new_theta;
-				new_parent_data.emplace_back(std::pair<unsigned, double>(r_pair));
+                new_machine_angles.push_back(new_theta);
+                if (DIM >2)
+                {
+                    double new_phi =  0.0; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+                    new_machine_angles.push_back(new_phi);
+                }
+				r_pair.second=new_machine_angles;
+				new_parent_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
 
 			}
 
@@ -218,13 +233,16 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	r_parent_data=new_parent_data;
 	r_daughter_data=new_daughter_data;
 
+
     return pNewCellTemp;
 
 }
 
 template<unsigned DIM>
-c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords(unsigned node_index,double theta,c_vector<double,DIM> cell_centre,double L)
+c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords(unsigned node_index,std::vector<double> machine_angles,c_vector<double,DIM> cell_centre,double L)
 {
+
+
     Node<DIM>* p_node = this->GetNode(node_index);
     double cell_angle = p_node->rGetNodeAttributes()[NA_THETA];
     double R = p_node->rGetNodeAttributes()[NA_RADIUS];
@@ -233,6 +251,9 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     // compute angle that defines end of the axis and beginning of hemisphere
     double theta_c = atan2(R, 0.5*L);
 
+
+    double theta =machine_angles[1];
+    //TODO - DEal with second angle
 
     double x_in_cell_frame = DOUBLE_UNSET;
     double y_in_cell_frame = DOUBLE_UNSET;
@@ -261,8 +282,17 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
     // Compute and store the coordinates of this machine
     c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
-    machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
-    machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
+
+    if (DIM > 1)
+    {
+        machine_coords[0] = cell_centre[0] + x_in_cell_frame*cos(cell_angle) - y_in_cell_frame*sin(cell_angle);
+        machine_coords[1] = cell_centre[1] + x_in_cell_frame*sin(cell_angle) + y_in_cell_frame*cos(cell_angle);
+    }
+    if (DIM>2)
+    {
+        machine_coords[2]=0.0;
+    }
+
 
     return machine_coords;
 
@@ -271,6 +301,7 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 template<unsigned DIM>
 std::vector<unsigned> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineData(CellPtr pCell)
 {
+
 
 
 	unsigned totalNumberMachines=0u;
@@ -286,7 +317,7 @@ std::vector<unsigned> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineData(C
 		EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
 	}
 	boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-	std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+	std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
 
 	 unsigned numMachineFiresInThisTimeStep=p_property->GetNumMachineFiresInThisTimeStep();
 
@@ -323,6 +354,7 @@ std::vector<unsigned> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineData(C
 	machine_data[2]=totalNumTypeB;
 	machine_data[3]=totalNumTypeH;
 	machine_data[4]=numMachineFiresInThisTimeStep;
+
 
 
     return machine_data;

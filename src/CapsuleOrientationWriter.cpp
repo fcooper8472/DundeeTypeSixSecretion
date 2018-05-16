@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CapsuleOrientationWriter.hpp"
 #include "TypeSixSecretionEnumerations.hpp"
 #include "NodeBasedCellPopulation.hpp"
+#include "Debug.hpp"
 
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
@@ -51,6 +52,7 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 c_vector<double, SPACE_DIM> CapsuleOrientationWriter<ELEMENT_DIM, SPACE_DIM>::GetVectorCellDataForVtkOutput(
         CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation)
 {
+
     assert(this->mOutputVectorData);
 
     c_vector<double, SPACE_DIM> orientation;
@@ -72,6 +74,7 @@ c_vector<double, SPACE_DIM> CapsuleOrientationWriter<ELEMENT_DIM, SPACE_DIM>::Ge
         	orientation[1] = sin(theta);
         }
     }
+
 
     return orientation;
 }
