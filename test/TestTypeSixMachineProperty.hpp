@@ -45,8 +45,11 @@ public:
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), true);
 
         // Test that we can add some data to the data structure
-        std::vector<std::pair<unsigned, double> >& r_data = p_property_from_cell->rGetMachineData();
-        r_data.emplace_back(std::pair<unsigned, double>(4, 0.5));
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property_from_cell->rGetMachineData();
+
+        std::vector<double> starter_conditions_2;
+        starter_conditions_2.push_back(0.5);
+        r_data.emplace_back(std::pair<unsigned, std::vector<double>>(4, starter_conditions_2));
         TS_ASSERT_EQUALS(r_data.empty(), false);
 
         collection = p_cell->rGetCellPropertyCollection().GetProperties<TypeSixMachineProperty>();
@@ -54,14 +57,14 @@ public:
         TS_ASSERT_EQUALS(p_property_from_cell->rGetMachineData().empty(), false);
 
         // Test that we can recover the data from the data structure
-        std::vector<std::pair<unsigned, double> >& r_data_from_cell = p_property_from_cell->rGetMachineData();
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data_from_cell = p_property_from_cell->rGetMachineData();
         TS_ASSERT_EQUALS(r_data_from_cell.size(), 1u);
 
-        std::pair<unsigned, double> data_pair = r_data_from_cell[0];
+        std::pair<unsigned, std::vector<double>> data_pair = r_data_from_cell[0];
         unsigned data_1 = data_pair.first;
         TS_ASSERT_EQUALS(data_1, 4u);
-        double data_2 = data_pair.second;
-        TS_ASSERT_DELTA(data_2, 0.5, 1e-6);
+        std::vector<double >data_2 = data_pair.second;
+        TS_ASSERT_DELTA(data_2[0], 0.5, 1e-6);
     }
 
     ///\todo test that property can be used in a simulation with different values for each cell

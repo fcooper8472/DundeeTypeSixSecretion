@@ -39,12 +39,12 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
             EXCEPTION("TypeSixMachineCellKiller cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
 
 
 
 		// Create a new vector to store all pairs less any we might throw away
-		std::vector<std::pair<unsigned, double> > new_data;
+        std::vector<std::pair<unsigned, std::vector<double>> > new_data ;
 		//new_data.reserve(r_data.size() + 1);
 
         // Iterate over machines in this cell
@@ -122,7 +122,7 @@ void TypeSixMachineCellKiller<DIM>::CheckAndLabelCellsForApoptosisOrDeath()
             else
             {
 		    }
-            new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+            new_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
 
         }
 

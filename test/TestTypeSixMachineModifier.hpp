@@ -146,7 +146,9 @@ public:
             p_model->SetBirthTime(-10.0);
 
             MAKE_PTR(TypeSixMachineProperty, p_property);
-	        p_property->rGetMachineData().emplace_back(std::pair<unsigned, double>(i%4, 0.0));
+            std::vector<double> machine_angles;
+            machine_angles.push_back(0.0);
+	        p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(i%4, machine_angles));
 
             CellPtr p_cell(new Cell(p_state, p_model));
             p_cell->SetCellProliferativeType(p_type);
@@ -178,7 +180,8 @@ public:
         simulation.AddSimulationModifier(p_modifier);
 
         // Run simulation
-        TS_ASSERT_THROWS_NOTHING(simulation.Solve());
+        simulation.Solve();
+        //TS_ASSERT_THROWS_NOTHING(simulation.Solve());
 
         ///\todo Test something
     }

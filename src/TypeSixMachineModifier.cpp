@@ -83,6 +83,8 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
 {
 #ifdef CHASTE_VTK
 
+
+
     // Store the present time as a string
     unsigned num_timesteps = SimulationTime::Instance()->GetTimeStepsElapsed();
     std::stringstream time;
@@ -100,6 +102,10 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
 
     // Iterate over cell population
     unsigned machine_index = 0;
+
+
+    NodeBasedCellPopulationWithCapsules<DIM>& rcapsule_pop=(static_cast<NodeBasedCellPopulationWithCapsules<DIM>&>(rCellPopulation));
+
     for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
          cell_iter != rCellPopulation.End();
          ++cell_iter)
@@ -111,11 +117,11 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
             EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
         
 
 
-        NodeBasedCellPopulationWithCapsules<DIM>& rcapsule_pop=(dynamic_cast<NodeBasedCellPopulationWithCapsules<DIM>&>(rCellPopulation));
+
 		Node<DIM>* p_node = rcapsule_pop.GetNodeCorrespondingToCell(*cell_iter);
 
 
@@ -129,17 +135,15 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
         {
             // Populate data for VTK
             vtk_machine_data.emplace_back(r_pair.first);
-            
+
             // Store the location of this machine
             c_vector<double, DIM> machine_coords=rcapsule_pop.GetMachineCoords(node_index,r_pair.second,cell_centre,L);
-
             machine_nodes.push_back(new Node<DIM>(machine_index, machine_coords, false));
             machine_index++;
         }
     }
 
     mesh_writer.AddPointData("machines", vtk_machine_data); 
-
     /*
      * At present, the VTK writer can only write things which inherit from AbstractTetrahedralMeshWriter.
      * For now, we do an explicit conversion to NodesOnlyMesh. This can be written to VTK, then visualized
@@ -161,6 +165,8 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
     {
         delete machine_nodes[i];
     }
+
+
 #endif //CHASTE_VTK
 }
 
@@ -218,6 +224,7 @@ unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopul
 {
 
 
+
 	unsigned totalNumberMachines=0u;
     ///\todo Make sure the cell population is updated?
     //rCellPopulation.Update();
@@ -235,13 +242,15 @@ unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopul
             EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
 
 
 
         totalNumberMachines+=r_data.size();
 
     }
+
+
     return totalNumberMachines;
 }
 
@@ -250,6 +259,7 @@ unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopul
 template<unsigned DIM>
 void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
+
 
 
     ///\todo Make sure the cell population is updated?
@@ -269,8 +279,9 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
             EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-        std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+        std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
         //unsigned& r_NumMachineFiresInThisTimeStep = p_property->rGetNumMachineFiresInThisTimeStep();
+
 
         unsigned numMachineFiresInThisTimeStep=0;
 
@@ -332,7 +343,9 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         //r_NumMachineFiresInThisTimeStep=
     }
 
+
 		
+
 
         // Iterate over cell population and create new machines randomly
         for (typename AbstractCellPopulation<DIM>::Iterator cell_iter = rCellPopulation.Begin();
@@ -346,20 +359,38 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 				EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
 			}
 			boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-			std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+			std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
 
 
 			// Create a machine?
 			double r = RandomNumberGenerator::Instance()->ranf();
 
+
+
+
 			if (r < mk_1*dt)
 			{
-				double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf()-M_PI;
+                std::vector<double> machine_angles;
 
-				r_data.emplace_back(std::pair<unsigned, double>(1u, theta));
+			    if (DIM>1)
+			    {
+			        double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
+			        machine_angles.push_back(theta);
+			    }
+			    if (DIM >2)
+				{
+			        double phi =  2*M_PI*RandomNumberGenerator::Instance()->ranf();
+                    machine_angles.push_back(phi);
+
+				}
+
+				r_data.emplace_back(std::pair<unsigned, std::vector<double> >(1u, machine_angles));
 			}
 
+
 		}
+
+
 
 
     // Iterate over cells and remove machines in State 0
@@ -374,11 +405,11 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
                 EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
             }
             boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
-            std::vector<std::pair<unsigned, double> >& r_data = p_property->rGetMachineData();
+            std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
 
 
             // Create a new vector to store all pairs less any we might throw away
-    		std::vector<std::pair<unsigned, double> > new_data;
+            std::vector<std::pair<unsigned, std::vector<double>> > new_data ;
     		//new_data.reserve(r_data.size() + 1);
 
             for (auto& r_pair : r_data)
@@ -387,12 +418,13 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
     	        if (current_state!=0u) // discard any machines in state 0
     	        {
-    		        new_data.emplace_back(std::pair<unsigned, double>(r_pair));
+    		        new_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
     	        }
 
             }
     		r_data = new_data;
         }
+
 
 }
 

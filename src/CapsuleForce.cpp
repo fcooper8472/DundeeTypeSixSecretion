@@ -62,6 +62,8 @@ double CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPo
                                                                                      double& rContactDistA,
                                                                                      double& rContactDistB)
 {
+
+
 	auto location_a = rNodeA.rGetLocation();
 	auto location_b = rNodeB.rGetLocation();
 
@@ -285,6 +287,8 @@ double CapsuleForce<ELEMENT_DIM, SPACE_DIM>::CalculateForceDirectionAndContactPo
 	{
 		rVecAToB /= shortest_distance; // Turn rVecAToB into a unit vector.
 	}
+
+
     return CalculateOverlapBetweenCapsules(rNodeA, rNodeB, shortest_distance); // return the overlap
 }
 
