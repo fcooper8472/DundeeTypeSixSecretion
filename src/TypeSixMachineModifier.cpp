@@ -353,6 +353,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
 
 		
+    NodeBasedCellPopulationWithCapsules<DIM>& rcapsule_pop=(static_cast<NodeBasedCellPopulationWithCapsules<DIM>&>(rCellPopulation));
 
 
         // Iterate over cell population and create new machines randomly
@@ -378,21 +379,34 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
 			if (r < mk_1*dt)
 			{
-                std::vector<double> machine_angles;
+                std::vector<double> machine_coordinates;
 
-			    if (DIM>1)
+                Node<DIM>* p_node = rcapsule_pop.GetNodeCorrespondingToCell(*cell_iter);
+                double L = p_node->rGetNodeAttributes()[NA_LENGTH];
+
+                double 	vertical_coordinate=L*(RandomNumberGenerator::Instance()->ranf()-0.5);
+                machine_coordinates.push_back(vertical_coordinate);
+
+			    if (DIM==2)
 			    {
-			        double theta = 2*M_PI*RandomNumberGenerator::Instance()->ranf();
-			        machine_angles.push_back(theta);
+
+			    	double r =RandomNumberGenerator::Instance()->ranf();
+
+			    	double azimuthal_coordinate=M_PI;
+			    	if (r>0.5)
+			    	{
+			    		azimuthal_coordinate=-M_PI;
+			    	}
+			    	machine_coordinates.push_back(azimuthal_coordinate);
 			    }
-			    if (DIM >2)
+			    if (DIM ==3)
 				{
-			        double phi =  2*M_PI*RandomNumberGenerator::Instance()->ranf();
-                    machine_angles.push_back(phi);
+			        double azimuthal_coordinate =  2*M_PI*RandomNumberGenerator::Instance()->ranf();
+			        machine_coordinates.push_back(azimuthal_coordinate);
 
 				}
 
-				r_data.emplace_back(std::pair<unsigned, std::vector<double> >(1u, machine_angles));
+				r_data.emplace_back(std::pair<unsigned, std::vector<double> >(1u, machine_coordinates));
 			}
 
 

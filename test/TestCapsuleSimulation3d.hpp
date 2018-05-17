@@ -417,7 +417,7 @@ public:
 		{
 			UniformCellCycleModel* p_model = new UniformCellCycleModel();
 			p_model->SetMinCellCycleDuration(1.0);
-			p_model->SetMaxCellCycleDuration(1.01);
+			p_model->SetMaxCellCycleDuration(1.5);
 			CellPtr p_cell(new Cell(p_state, p_model));
 			p_cell->SetCellProliferativeType(p_type);
 
@@ -434,8 +434,9 @@ public:
 			p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(4, machine_angles1));
 
 
+			double birth_time = -RandomNumberGenerator::Instance()->ranf();
 			p_cell->AddCellProperty(p_property);
-			p_cell->SetBirthTime(-0.9);
+			p_cell->SetBirthTime(birth_time);
 			mesh.GetNode(i)->rGetNodeAttributes()[NA_LENGTH] = 2.0 +3.0*p_cell->GetBirthTime()/p_model->GetCellCycleDuration(); ;
 
 			cells.push_back(p_cell);
