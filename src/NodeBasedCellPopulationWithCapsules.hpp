@@ -99,8 +99,8 @@ public:
      * @param dt the time step
      */
      //void UpdateNodeLocations(double dt);
+    CellPtr AddCell(CellPtr pNewCell, CellPtr pParentCell);
 
-     CellPtr AddCell(CellPtr pNewCell, CellPtr pParentCell);
 
      c_vector<double, DIM> GetMachineCoords(unsigned node_index,std::vector<double> machine_angles,c_vector<double,DIM> cell_centre,double L);
 

@@ -14,6 +14,11 @@ std::vector<std::pair<unsigned, std::vector<double>> >& TypeSixMachineProperty::
     return mMachineData;
 }
 
+void TypeSixMachineProperty::SetMachineData(std::vector<std::pair<unsigned, std::vector<double>> > machineData)
+{
+     mMachineData=machineData;
+}
+
 unsigned TypeSixMachineProperty::GetNumMachineFiresInThisTimeStep()
 {
     return mNumMachineFiresInThisTimeStep;

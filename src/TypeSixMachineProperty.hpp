@@ -38,6 +38,9 @@ public:
      * @return #mMachineData
      */
     std::vector<std::pair<unsigned, std::vector<double>> >& rGetMachineData();
+    void SetMachineData(std::vector<std::pair<unsigned, std::vector<double>> >);
+
+
 
 
     unsigned GetNumMachineFiresInThisTimeStep();

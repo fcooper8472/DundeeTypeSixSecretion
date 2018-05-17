@@ -127,16 +127,11 @@ void TypeSixMachineModifier<DIM>::WriteVtk(AbstractCellPopulation<DIM,DIM>& rCel
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
         std::vector<std::pair<unsigned, std::vector<double>> >& r_data = p_property->rGetMachineData();
         
-
-
-
 		Node<DIM>* p_node = rcapsule_pop.GetNodeCorrespondingToCell(*cell_iter);
-
 
 		double L = p_node->rGetNodeAttributes()[NA_LENGTH];
         c_vector<double, DIM> cell_centre = p_node->rGetLocation();
         unsigned node_index = rCellPopulation.GetLocationIndexUsingCell(*cell_iter);
-
 
         // Populate the vector of VTK data
         for (auto& r_pair : r_data)
@@ -385,15 +380,16 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
                 double L = p_node->rGetNodeAttributes()[NA_LENGTH];
 
                 double 	vertical_coordinate=L*(RandomNumberGenerator::Instance()->ranf()-0.5);
+                PRINT_VARIABLE(vertical_coordinate);
                 machine_coordinates.push_back(vertical_coordinate);
 
 			    if (DIM==2)
 			    {
 
-			    	double r =RandomNumberGenerator::Instance()->ranf();
+			    	double r2 =RandomNumberGenerator::Instance()->ranf();
 
 			    	double azimuthal_coordinate=M_PI;
-			    	if (r>0.5)
+			    	if (r2>0.5)
 			    	{
 			    		azimuthal_coordinate=-M_PI;
 			    	}

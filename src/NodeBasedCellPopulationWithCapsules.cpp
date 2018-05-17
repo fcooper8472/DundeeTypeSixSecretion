@@ -135,8 +135,6 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	{
 		double phi = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_PHI];
 		p_new_node->rGetNodeAttributes()[NA_PHI] =  phi;
-
-
 	}
 
 
@@ -162,8 +160,8 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	MAKE_PTR(TypeSixMachineProperty, p_property);
 	p_property->SetNumMachineFiresInThisTimeStep(0u);
 
-	pNewCell->AddCellProperty(p_property);
-	std::vector<std::pair<unsigned, std::vector<double>> >& r_daughter_data = p_property->rGetMachineData();
+	pNewCellTemp->AddCellProperty(p_property);
+	//std::vector<std::pair<unsigned, std::vector<double>> >& r_daughter_data = p_property->rGetMachineData();
 
 
 	// Create a new vector to store all pairs less any we might throw away
@@ -180,73 +178,46 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	Node<DIM>* p_daughter_node = this->GetNode(daughter_node_index);
 	auto daughter_cell_centre = p_daughter_node->rGetLocation();
 
-
-
-	// angle defined w.r.t.  centre of cell before it divided
 	//c_vector<double,DIM> old_cell_centre=0.5*(parent_cell_centre+daughter_cell_centre);
 	double L = p_parent_node->rGetNodeAttributes()[NA_LENGTH];
 
-
-
-
-	// Iterate over machines in this cell and update angles
+	// Iterate over machines in this cell and distribute to mother or daughter
 	for (auto& r_pair : r_parent_data)
 	{
-
-
-			// retrieve machine coordinates in frame of old cell
+	        // retrieve machine coordinates in frame of old cell
 			std::vector<double> local_machine_coords = r_pair.second;
 
 
-			// use old parent cell coordinates to compute machine coordinates
-			//c_vector<double, DIM> machine_coords = GetMachineCoords(parent_node_index, local_machine_coords,old_cell_centre, p_parent_node->rGetNodeAttributes()[NA_LENGTH]);
-;
 			double vertical_coordinate=local_machine_coords[0];
             std::vector<double> new_machine_angles; // = r_pair.second;
-			double new_vertical_coord = vertical_coordinate-L/4.0;
+			double new_vertical_coord;
 
-			if (vertical_coordinate < -L/4.0 ) // machine inherited by daughter cell
+			if (vertical_coordinate < 0.0 ) // machine inherited by daughter cell
 			{
 				new_vertical_coord = vertical_coordinate+L/4.0;
-
-			}
-
-			else if (vertical_coordinate < 0.0 )
-			{
-				new_vertical_coord = vertical_coordinate+L/4.0;
-
-			}
-
-			else if (vertical_coordinate < L/4.0)
-			{
-
-				new_vertical_coord = vertical_coordinate-L/4.0;
-			}
-			else
-			{
-				new_vertical_coord = vertical_coordinate-L/4.0;
-
-			}
 
 				new_machine_angles.push_back(new_vertical_coord);
+                double new_phi =  local_machine_coords[1]; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+                new_machine_angles.push_back(new_phi);
+                r_pair.second=new_machine_angles;
 
-				//if (DIM >2)
-				//{
-				    double new_phi =  local_machine_coords[1]; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
-				    new_machine_angles.push_back(new_phi);
-				//}
+                new_daughter_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
+			}
+			else if (vertical_coordinate >0.0)// machine inherited by mother cell
+			{
 
+				new_vertical_coord = vertical_coordinate-L/4.0;
+				new_machine_angles.push_back(new_vertical_coord);
+				double new_phi =  local_machine_coords[1]; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
+				new_machine_angles.push_back(new_phi);
 				r_pair.second=new_machine_angles;
-				new_daughter_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
-
-
-
-
+				new_parent_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
+			}
 	}
 
 	// assign machine vectors to daughter and mother cells
-	r_parent_data=new_parent_data;
-	r_daughter_data=new_daughter_data;
+	p_parent_property->rGetMachineData()=new_parent_data;
+	p_property->rGetMachineData()=new_daughter_data;
 
     return pNewCellTemp;
 
@@ -262,8 +233,8 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     double R = p_node->rGetNodeAttributes()[NA_RADIUS];
 
 
-    double vertical_coordinate = machine_coordinates[1];
-    double azimuthal_coordinate = machine_coordinates[2];
+    double vertical_coordinate = machine_coordinates[0];
+    double azimuthal_coordinate = machine_coordinates[1];
 
     double x_in_cell_frame = vertical_coordinate;
 
@@ -346,6 +317,7 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
 
 		machine_coords=cell_centre + prod(rotation_matrix_theta, cartesian_coords_in_cell_frame);
+		//PRINT_VECTOR(machine_coords);
 
 //    			machine_coords=cell_centre+
 //
