@@ -222,6 +222,21 @@ void TypeSixMachineModifier<DIM>::Setk_1(double k_1)
 
 	mk_1= k_1;
 }
+
+template<unsigned DIM>
+void TypeSixMachineModifier<DIM>::Setk_5(double k_5)
+{
+
+	mk_5= k_5;
+}
+
+template<unsigned DIM>
+void TypeSixMachineModifier<DIM>::Setk_2(double k_2)
+{
+
+	mk_2= k_2;
+}
+
 template<unsigned DIM>
 unsigned TypeSixMachineModifier<DIM>::GetTotalNumberOfMachines(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
@@ -279,6 +294,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
         if (collection.GetSize() != 1)
         {
+        	continue;
             EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());

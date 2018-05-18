@@ -305,7 +305,7 @@ public:
 		simulator.AddForce(p_capsule_force);
 
 		/* We then set an end time and run the simulation */
-		simulator.SetEndTime(1.7);
+		simulator.SetEndTime(1.1);
 		simulator.Solve();
 
 		TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),2u);
@@ -360,7 +360,7 @@ public:
             machine_coordinates.push_back(azimuthal_coordinate);
 
             MAKE_PTR(TypeSixMachineProperty, p_property);
-            p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(0, machine_coordinates));
+            p_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(1, machine_coordinates));
 
             p_cell->AddCellProperty(p_property);
 
@@ -396,12 +396,31 @@ public:
         MAKE_PTR(TypeSixMachineModifier<2>, p_modifier);
         p_modifier->SetOutputDirectory("TestMachineModifierWithDivision2d");
         p_modifier->Setk_1(0.0);
+        p_modifier->Setk_5(0.0);
+        p_modifier->Setk_2(0.0);
+
+
         simulator.AddSimulationModifier(p_modifier);
 
-        /* We then set an end time and run the simulation */
-        simulator.SetEndTime(1.7);
-        simulator.Solve();
+    	unsigned num_machines=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
 
+    	TS_ASSERT_EQUALS(num_machines,1u);
+        TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),1u);
+
+
+        /* We then set an end time and run the simulation */
+        simulator.SetEndTime(0.35);
+        simulator.Solve();
+    	unsigned num_machines2=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+
+    	TS_ASSERT_EQUALS(num_machines2,1u);
+
+        TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),1u);
+
+        simulator.SetEndTime(0.5);
+        simulator.Solve();
+        unsigned num_machines3=p_modifier->GetTotalNumberOfMachines(simulator.rGetCellPopulation());
+        TS_ASSERT_EQUALS(num_machines3,1u);
         TS_ASSERT_EQUALS(simulator.rGetCellPopulation().GetNumRealCells(),2u);
     }
 

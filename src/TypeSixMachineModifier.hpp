@@ -96,6 +96,10 @@ public:
 
 
     void Setk_1(double k_1);
+    void Setk_5(double k_5);
+    void Setk_2(double k_2);
+
+
     void SetMachineParametersFromGercEtAl();
     void SetContactDependentFiring();
 

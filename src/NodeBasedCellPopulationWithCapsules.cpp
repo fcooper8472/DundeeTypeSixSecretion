@@ -115,6 +115,7 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 	auto pNewCellTemp=NodeBasedCellPopulation<DIM>::AddCell(pNewCell, pParentCell);
 
+
 	// Get new node
 	Node<DIM>* p_new_node = this->GetNodeCorrespondingToCell(pNewCellTemp);// new Node<DIM>(this->GetNumNodes(), daughter_position, false); // never on boundary
 
@@ -124,23 +125,18 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	double angle = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_THETA];
 	angle = angle + 0.001*(RandomNumberGenerator::Instance()->ranf()-0.5)*2*M_PI;
 
-
 	double length = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_LENGTH];
 	double radius = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_RADIUS];
 
 	p_new_node->rGetNodeAttributes()[NA_THETA] =  angle;
-
-
 	if (DIM==3)
 	{
 		double phi = (this->GetNodeCorrespondingToCell(pParentCell))->rGetNodeAttributes()[NA_PHI];
 		p_new_node->rGetNodeAttributes()[NA_PHI] =  phi;
 	}
 
-
 	p_new_node->rGetNodeAttributes()[NA_LENGTH] = length;
 	p_new_node->rGetNodeAttributes()[NA_RADIUS] = radius;
-
 
     // Get this cell's type six machine property data
     CellPropertyCollection collection = pParentCell->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
@@ -153,32 +149,12 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 
 
-	// remove copied daughter cell property and create a new cell property
-	pNewCell->RemoveCellProperty<TypeSixMachineProperty>();
+	MAKE_PTR(TypeSixMachineProperty, p_new_daughter_property);
+	MAKE_PTR(TypeSixMachineProperty, p_new_parent_property);
 
-
-	MAKE_PTR(TypeSixMachineProperty, p_property);
-	p_property->SetNumMachineFiresInThisTimeStep(0u);
-
-	pNewCellTemp->AddCellProperty(p_property);
-	//std::vector<std::pair<unsigned, std::vector<double>> >& r_daughter_data = p_property->rGetMachineData();
-
-
-	// Create a new vector to store all pairs less any we might throw away
-	std::vector<std::pair<unsigned, std::vector<double>> > new_parent_data;
-	std::vector<std::pair<unsigned, std::vector<double>> > new_daughter_data;
-
-	//new_data.reserve(r_data.size() + 1);
 
 	unsigned parent_node_index = this->GetLocationIndexUsingCell(pParentCell);
 	Node<DIM>* p_parent_node = this->GetNode(parent_node_index);
-	auto parent_cell_centre = p_parent_node->rGetLocation();
-
-	unsigned daughter_node_index = this->GetLocationIndexUsingCell(pNewCell);
-	Node<DIM>* p_daughter_node = this->GetNode(daughter_node_index);
-	auto daughter_cell_centre = p_daughter_node->rGetLocation();
-
-	//c_vector<double,DIM> old_cell_centre=0.5*(parent_cell_centre+daughter_cell_centre);
 	double L = p_parent_node->rGetNodeAttributes()[NA_LENGTH];
 
 	// Iterate over machines in this cell and distribute to mother or daughter
@@ -189,37 +165,41 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 
 			double vertical_coordinate=local_machine_coords[0];
-            std::vector<double> new_machine_angles; // = r_pair.second;
-			double new_vertical_coord;
 
 			if (vertical_coordinate < 0.0 ) // machine inherited by daughter cell
 			{
-				new_vertical_coord = vertical_coordinate+L/4.0;
-
-				new_machine_angles.push_back(new_vertical_coord);
-                double new_phi =  local_machine_coords[1]; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
-                new_machine_angles.push_back(new_phi);
-                r_pair.second=new_machine_angles;
-
-                new_daughter_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
+				double new_vertical_coord = vertical_coordinate+L/4.0;
+                double new_phi =  local_machine_coords[1];
+                std::vector<double> new_machine_coordinates;
+                new_machine_coordinates.push_back(new_vertical_coord);
+                new_machine_coordinates.push_back(new_phi);
+                p_new_daughter_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(r_pair.first, new_machine_coordinates));
 			}
-			else if (vertical_coordinate >0.0)// machine inherited by mother cell
+			else if (vertical_coordinate >=0.0)// machine inherited by mother cell
 			{
 
-				new_vertical_coord = vertical_coordinate-L/4.0;
-				new_machine_angles.push_back(new_vertical_coord);
-				double new_phi =  local_machine_coords[1]; //atan2(machine_coords[1]-daughter_cell_centre[1], machine_coords[0]-daughter_cell_centre[0]);
-				new_machine_angles.push_back(new_phi);
-				r_pair.second=new_machine_angles;
-				new_parent_data.emplace_back(std::pair<unsigned, std::vector<double>>(r_pair));
+				double new_vertical_coord = vertical_coordinate-L/4.0;
+				double new_phi =  local_machine_coords[1];
+				std::vector<double> new_machine_coordinates;
+				new_machine_coordinates.push_back(new_vertical_coord);
+				new_machine_coordinates.push_back(new_phi);
+				p_new_parent_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(r_pair.first, new_machine_coordinates));
 			}
 	}
 
-	// assign machine vectors to daughter and mother cells
-	p_parent_property->rGetMachineData()=new_parent_data;
-	p_property->rGetMachineData()=new_daughter_data;
+	CellPropertyCollection daughter_collection = pNewCellTemp->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
+	daughter_collection.RemoveProperty<TypeSixMachineProperty>();
+	collection.RemoveProperty<TypeSixMachineProperty>();
 
-    return pNewCellTemp;
+	//boost::shared_ptr<TypeSixMachineProperty> p_daughter_property = boost::static_pointer_cast<TypeSixMachineProperty>(daughter_collection.GetProperty());
+
+
+	collection.AddProperty(p_new_parent_property);
+	daughter_collection.AddProperty(p_new_daughter_property);
+
+	//p_parent_property=p_new_parent_property;
+	//p_daughter_property=p_new_daughter_property;
+	return pNewCellTemp;
 
 }
 
