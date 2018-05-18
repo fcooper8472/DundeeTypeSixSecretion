@@ -179,28 +179,27 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	// Iterate over machines in this cell and distribute to mother or daughter
 	for (auto& r_pair : r_parent_data)
 	{
-	    MARK;
+	    //MARK;
 	        // retrieve machine coordinates in frame of old cell
 			std::vector<double> local_machine_coords = r_pair.second;
 
 
 			double vertical_coordinate=local_machine_coords[0];
 
-			if (vertical_coordinate < 0.0 ) // machine inherited by daughter cell
+			if (vertical_coordinate > 0.0 ) // machine inherited by daughter cell
 			{
-			    MARK;
-				double new_vertical_coord = vertical_coordinate+L/4.0;
+				double new_vertical_coord = vertical_coordinate-L/4.0;
                 double new_phi =  local_machine_coords[1];
                 std::vector<double> new_machine_coordinates;
                 new_machine_coordinates.push_back(new_vertical_coord);
                 new_machine_coordinates.push_back(new_phi);
+
                 unsigned machine_state=r_pair.first;
                 p_new_daughter_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(machine_state, new_machine_coordinates));
 			}
-			else if (vertical_coordinate >=0.0)// machine inherited by mother cell
+			else if (vertical_coordinate <=0.0)// machine inherited by mother cell
 			{
-			    MARK;
-			    double new_vertical_coord = vertical_coordinate-L/4.0;
+				double new_vertical_coord = vertical_coordinate+L/4.0;
                 double new_phi =  local_machine_coords[1];
                 std::vector<double> new_machine_coordinates;
                 new_machine_coordinates.push_back(new_vertical_coord);
@@ -210,8 +209,8 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 		}
 	}
 
-	(p_parent_property->rGetMachineData()).clear();
-    (p_daughter_property->rGetMachineData()).clear();
+	//(p_parent_property->rGetMachineData()).clear();
+    //(p_daughter_property->rGetMachineData()).clear();
 
 
     pParentCell->template RemoveCellProperty<TypeSixMachineProperty>();
@@ -231,7 +230,6 @@ template<unsigned DIM>
 c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords(unsigned node_index,std::vector<double> machine_coordinates,c_vector<double,DIM> cell_centre,double L)
 {
 
-
     Node<DIM>* p_node = this->GetNode(node_index);
     double cell_angle_theta = p_node->rGetNodeAttributes()[NA_THETA];
     double R = p_node->rGetNodeAttributes()[NA_RADIUS];
@@ -245,7 +243,7 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
     double rho;
 
-    if (fabs(vertical_coordinate)<L/2.0 )
+    if (fabs(vertical_coordinate)<=L/2.0 )
     {
     	rho = R;
     }
@@ -254,7 +252,7 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     	double z_diff=vertical_coordinate-L/2.0;
     	rho =sqrt(R*R-z_diff*z_diff);
     }
-    else if (vertical_coordinate<L/2.0)
+    else if (vertical_coordinate<-L/2.0)
     {
     	double z_diff=vertical_coordinate+L/2.0;
     	rho =sqrt(R*R-z_diff*z_diff);
@@ -268,43 +266,6 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
 
 
-
-
-
-    /*// compute angle that defines end of the axis and beginning of hemisphere
-    double theta_c = atan2(R, 0.5*L);
-
-
-    double theta =machine_coordinates[1];
-    //TODO - DEal with second angle
-
-    double y_in_cell_frame = DOUBLE_UNSET;
-    //if (fabs(theta - 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on upper body axis
-    if (theta > theta_c && theta < M_PI-theta_c) // machine lies on upper body axis
-    {
-        x_in_cell_frame = R/tan(theta);
-        y_in_cell_frame = R;
-    }
-    //else if (fabs(theta + 0.5*M_PI) < 0.5*M_PI - theta_c) // machine lies on lower body axis
-    else if (theta < -theta_c && theta > -M_PI+theta_c) // machine lies on upper body axis
-    {
-        x_in_cell_frame = -R/tan(theta);
-        y_in_cell_frame = -R;
-    }
-    else if (fabs(theta) < theta_c) // machine lies on right hemisphere
-    {
-        x_in_cell_frame = (L+sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-        y_in_cell_frame = x_in_cell_frame*tan(theta);
-    }
-    else
-    {
-        x_in_cell_frame = (-L-sqrt(L*L-(L*L-4*R*R)*(1+tan(theta)*tan(theta))))/(2*(1+tan(theta)*tan(theta)));
-        y_in_cell_frame = x_in_cell_frame*tan(theta);
-    }
-
-
- */
-    // Compute and store the coordinates of this machine
     c_vector<double, DIM> machine_coords = zero_vector<double>(DIM);
 
     if (DIM ==2)
@@ -353,7 +314,6 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
 		machine_coords=cell_centre + prod(prod(rotation_matrix_theta,rotation_matrix_phi), cartesian_coords_in_cell_frame);
     }
-
 
     return machine_coords;
 
