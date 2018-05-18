@@ -294,7 +294,7 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
         CellPropertyCollection collection = cell_iter->rGetCellPropertyCollection().template GetProperties<TypeSixMachineProperty>();
         if (collection.GetSize() != 1)
         {
-        	continue;
+        	//continue;
             EXCEPTION("TypeSixMachineModifier cannot be used unless each cell has a TypeSixMachineProperty");
         }
         boost::shared_ptr<TypeSixMachineProperty> p_property = boost::static_pointer_cast<TypeSixMachineProperty>(collection.GetProperty());
