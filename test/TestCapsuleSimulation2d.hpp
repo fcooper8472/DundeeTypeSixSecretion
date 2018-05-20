@@ -668,7 +668,7 @@ public:
             		   }
 
 
-	void xTestSingleCapsuleSimulationWithDivisionAndMachinesKiller() throw (Exception)
+	void TestSingleCapsuleSimulationWithDivisionAndMachinesKiller() throw (Exception)
             		   {
 		EXIT_IF_PARALLEL;
 

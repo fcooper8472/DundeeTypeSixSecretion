@@ -172,6 +172,8 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 	unsigned parent_node_index = this->GetLocationIndexUsingCell(pParentCell);
 	Node<DIM>* p_parent_node = this->GetNode(parent_node_index);
 	double L = p_parent_node->rGetNodeAttributes()[NA_LENGTH];
+	double R = p_parent_node->rGetNodeAttributes()[NA_RADIUS];
+
 
 
 
@@ -186,9 +188,9 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
 
 			double vertical_coordinate=local_machine_coords[0];
 
-			if (vertical_coordinate > 0.0 ) // machine inherited by daughter cell
+			if (vertical_coordinate < 0.0 ) // machine inherited by daughter cell
 			{
-				double new_vertical_coord = vertical_coordinate-L/4.0;
+				double new_vertical_coord = (vertical_coordinate+(L+2*R)/4.0);
                 double new_phi =  local_machine_coords[1];
                 std::vector<double> new_machine_coordinates;
                 new_machine_coordinates.push_back(new_vertical_coord);
@@ -197,9 +199,9 @@ CellPtr NodeBasedCellPopulationWithCapsules<DIM>::AddCell(CellPtr pNewCell, Cell
                 unsigned machine_state=r_pair.first;
                 p_new_daughter_property->rGetMachineData().emplace_back(std::pair<unsigned, std::vector<double>>(machine_state, new_machine_coordinates));
 			}
-			else if (vertical_coordinate <=0.0)// machine inherited by mother cell
+			else if (vertical_coordinate >=0.0)// machine inherited by mother cell
 			{
-				double new_vertical_coord = vertical_coordinate+L/4.0;
+				double new_vertical_coord = (vertical_coordinate-(L+2*R)/4.0);
                 double new_phi =  local_machine_coords[1];
                 std::vector<double> new_machine_coordinates;
                 new_machine_coordinates.push_back(new_vertical_coord);
@@ -238,10 +240,10 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     double vertical_coordinate = machine_coordinates[0];
     double azimuthal_coordinate = machine_coordinates[1];
 
-    double x_in_cell_frame = vertical_coordinate;
 
 
-    double rho;
+    double rho; //
+
 
     if (fabs(vertical_coordinate)<=L/2.0 )
     {
@@ -259,7 +261,6 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     }
 
 
-    double y_in_cell_frame = rho*cos(azimuthal_coordinate);
 
 
 
@@ -270,6 +271,9 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 
     if (DIM ==2)
     {
+        double x_in_cell_frame = vertical_coordinate;
+        double y_in_cell_frame = rho*cos(azimuthal_coordinate);
+
     	c_vector<double, DIM> cartesian_coords_in_cell_frame;
 		cartesian_coords_in_cell_frame(0)=x_in_cell_frame;
 		cartesian_coords_in_cell_frame(1)=y_in_cell_frame;
@@ -291,9 +295,11 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
     }
     else if (DIM==3)
     {
-        double cell_angle_phi = p_node->rGetNodeAttributes()[NA_PHI];
-    	double z_in_cell_frame = rho*sin(azimuthal_coordinate);
-
+        double cell_angle_phi = (p_node->rGetNodeAttributes()[NA_PHI]);
+        double x_in_cell_frame = rho*cos(azimuthal_coordinate);;
+        double y_in_cell_frame = rho*sin(azimuthal_coordinate);
+        double z_in_cell_frame=vertical_coordinate;
+    	//cell_angle_theta=cell_angle_theta;
 
     	c_vector<double, DIM> cartesian_coords_in_cell_frame;
     	cartesian_coords_in_cell_frame(0)=x_in_cell_frame;
@@ -307,13 +313,16 @@ c_vector<double, DIM> NodeBasedCellPopulationWithCapsules<DIM>::GetMachineCoords
 		rotation_matrix_theta(1,1)=cos(cell_angle_theta);
 
 		c_matrix<double,3,3> rotation_matrix_phi = identity_matrix<double>(3);
-		rotation_matrix_phi(1,1)=cos(cell_angle_phi);
-		rotation_matrix_phi(1,2)=-sin(cell_angle_phi);
-		rotation_matrix_phi(2,1)=sin(cell_angle_phi);
+		rotation_matrix_phi(0,0)=cos(cell_angle_phi);
+		rotation_matrix_phi(0,2)=-sin(cell_angle_phi);
+		rotation_matrix_phi(2,0)=sin(cell_angle_phi);
 		rotation_matrix_phi(2,2)=cos(cell_angle_phi);
 
 		machine_coords=cell_centre + prod(prod(rotation_matrix_theta,rotation_matrix_phi), cartesian_coords_in_cell_frame);
+
+
     }
+
 
     return machine_coords;
 

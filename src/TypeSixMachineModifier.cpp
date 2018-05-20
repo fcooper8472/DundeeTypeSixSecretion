@@ -394,9 +394,10 @@ void TypeSixMachineModifier<DIM>::UpdateCellData(AbstractCellPopulation<DIM,DIM>
 
                 Node<DIM>* p_node = rcapsule_pop.GetNodeCorrespondingToCell(*cell_iter);
                 double L = p_node->rGetNodeAttributes()[NA_LENGTH];
+                double radius = p_node->rGetNodeAttributes()[NA_RADIUS];
 
-                double 	vertical_coordinate=L*(RandomNumberGenerator::Instance()->ranf()-0.5);
-                PRINT_VARIABLE(vertical_coordinate);
+
+                double 	vertical_coordinate=(L+2.0*radius)*(RandomNumberGenerator::Instance()->ranf()-0.5);
                 machine_coordinates.push_back(vertical_coordinate);
 
 			    if (DIM==2)
